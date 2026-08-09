@@ -480,8 +480,9 @@
   async function downloadSong(song) {
     const filename = `${song.title} - ${song.artist}.mp3`;
     try {
-      // same-origin (local) files can be downloaded as a blob with the real filename
+      // same-origin (or CORS-enabled) files can be downloaded as a blob with the real filename
       const response = await fetch(song.src);
+      if (!response.ok) throw new Error(`Fetch failed: ${response.status}`);
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);
       const link = document.createElement("a");
@@ -490,9 +491,10 @@
       document.body.appendChild(link);
       link.click();
       link.remove();
-      URL.revokeObjectURL(url);
+      // delay revoke so the browser has time to actually start the download
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (err) {
-      // cross-origin sources (e.g. SoundHelix) block blob fetch, fall back to a direct link
+      // cross-origin sources without CORS (e.g. SoundHelix) block blob fetch, fall back to a direct link
       const link = document.createElement("a");
       link.href = song.src;
       link.download = filename;
