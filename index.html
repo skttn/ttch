@@ -84,7 +84,7 @@
   <div class="fixed inset-0 -z-[9] bg-white/40 dark:bg-black/60 transition-colors duration-700"></div>
 
   <!-- Header: floating search bar -->
-  <header class="sticky top-0 z-20 px-4 pt-5 pb-3 md:px-8">
+  <header class="sticky top-0 z-20 px-4 pt-5 pb-3 md:px-8 bg-white/70 dark:bg-gray-950/70 backdrop-blur-xl shadow-sm dark:shadow-black/20 transition-colors duration-700">
     <div class="max-w-3xl mx-auto">
       <div class="flex items-center justify-between mb-4">
         <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100">☀️ Tỉnh Thức Chuyển Hóa</h1>
@@ -318,8 +318,7 @@
       gradient: GRADIENTS[idx % GRADIENTS.length],
       duration: null,
       durationLoading: false,
-      cover: null,
-      coverLoading: false,
+      cover: `https://source.unsplash.com/300x300/?music,sig=${idx}`,
     };
   });
 
@@ -400,106 +399,6 @@
     activeBgLayer = activeBgLayer === "A" ? "B" : "A";
   }
 
-  // gradient-tinted placeholder cover shown until the mp3's embedded artwork (if any) loads
-  function placeholderCover(gradient) {
-    const [c1, c2] = gradient;
-    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><defs><radialGradient id='g' cx='50%' cy='50%' r='75%'><stop offset='0%' stop-color='${c1}'/><stop offset='100%' stop-color='${c2}'/></radialGradient></defs><rect width='200' height='200' fill='url(#g)'/><text x='50%' y='56%' font-size='84' text-anchor='middle' dominant-baseline='middle'>🎵</text></svg>`;
-    return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
-  }
-
-  // ---- Embedded ID3 cover art extraction (reads only the tag header, no full download) ----
-  async function extractCoverFromMp3(url) {
-    try {
-      const headRes = await fetch(url, { headers: { Range: "bytes=0-9" } });
-      const headBuf = await headRes.arrayBuffer();
-      if (headBuf.byteLength < 10) return null;
-      const headView = new DataView(headBuf);
-      if (String.fromCharCode(headView.getUint8(0), headView.getUint8(1), headView.getUint8(2)) !== "ID3") return null;
-      const majorVersion = headView.getUint8(3);
-      const flags = headView.getUint8(5);
-      const hasExtendedHeader = majorVersion >= 3 && (flags & 0x40) !== 0;
-      const synchsafe = (b0, b1, b2, b3) => (b0 << 21) | (b1 << 14) | (b2 << 7) | b3;
-      const beInt = (b0, b1, b2, b3) => (b0 * 0x1000000) + (b1 << 16) + (b2 << 8) + b3;
-      const tagSize = synchsafe(headView.getUint8(6), headView.getUint8(7), headView.getUint8(8), headView.getUint8(9));
-      const totalTagBytes = 10 + tagSize;
-
-      const fullRes = await fetch(url, { headers: { Range: `bytes=0-${totalTagBytes - 1}` } });
-      const buf = await fullRes.arrayBuffer();
-      const view = new DataView(buf);
-
-      let offset = 10;
-      if (hasExtendedHeader && offset + 4 <= buf.byteLength) {
-        const extSize = majorVersion >= 4
-          ? synchsafe(view.getUint8(offset), view.getUint8(offset + 1), view.getUint8(offset + 2), view.getUint8(offset + 3))
-          : beInt(view.getUint8(offset), view.getUint8(offset + 1), view.getUint8(offset + 2), view.getUint8(offset + 3));
-        offset += majorVersion >= 4 ? extSize : extSize + 4;
-      }
-
-      // ID3v2.2 uses 3-char frame IDs ("PIC") with 3-byte sizes instead of the v2.3/2.4 4+4 layout
-      const isV2 = majorVersion === 2;
-      const frameHeaderSize = isV2 ? 6 : 10;
-      const pictureFrameId = isV2 ? "PIC" : "APIC";
-
-      while (offset + frameHeaderSize <= buf.byteLength && offset < totalTagBytes) {
-        const frameId = isV2
-          ? String.fromCharCode(view.getUint8(offset), view.getUint8(offset + 1), view.getUint8(offset + 2))
-          : String.fromCharCode(view.getUint8(offset), view.getUint8(offset + 1), view.getUint8(offset + 2), view.getUint8(offset + 3));
-        if (!frameId.trim() || frameId.charCodeAt(0) === 0) break;
-        let frameSize;
-        if (isV2) {
-          frameSize = beInt(0, view.getUint8(offset + 3), view.getUint8(offset + 4), view.getUint8(offset + 5));
-        } else if (majorVersion >= 4) {
-          frameSize = synchsafe(view.getUint8(offset + 4), view.getUint8(offset + 5), view.getUint8(offset + 6), view.getUint8(offset + 7));
-        } else {
-          frameSize = beInt(view.getUint8(offset + 4), view.getUint8(offset + 5), view.getUint8(offset + 6), view.getUint8(offset + 7));
-        }
-        const frameStart = offset + frameHeaderSize;
-
-        if (frameId === pictureFrameId && frameStart + frameSize <= buf.byteLength) {
-          let p = frameStart;
-          const enc = view.getUint8(p); p += 1;
-          let mimeType = "image/jpeg";
-          if (isV2) {
-            const fmt = String.fromCharCode(view.getUint8(p), view.getUint8(p + 1), view.getUint8(p + 2)).toUpperCase();
-            mimeType = fmt === "PNG" ? "image/png" : "image/jpeg";
-            p += 3;
-          } else {
-            let mimeEnd = p;
-            while (mimeEnd < buf.byteLength && view.getUint8(mimeEnd) !== 0) mimeEnd++;
-            mimeType = new TextDecoder("iso-8859-1").decode(buf.slice(p, mimeEnd)) || "image/jpeg";
-            p = mimeEnd + 1;
-          }
-          p += 1; // picture type byte
-          if (enc === 1 || enc === 2) {
-            while (p + 1 < buf.byteLength && !(view.getUint8(p) === 0 && view.getUint8(p + 1) === 0)) p += 2;
-            p += 2;
-          } else {
-            while (p < buf.byteLength && view.getUint8(p) !== 0) p++;
-            p += 1;
-          }
-          const imgData = buf.slice(p, frameStart + frameSize);
-          return URL.createObjectURL(new Blob([imgData], { type: mimeType }));
-        }
-        offset = frameStart + frameSize;
-      }
-      return null;
-    } catch (err) {
-      return null;
-    }
-  }
-
-  function ensureCoverLoaded(song, onLoaded) {
-    if (song.cover || song.coverLoading) return;
-    song.coverLoading = true;
-    extractCoverFromMp3(song.src).then((url) => {
-      song.coverLoading = false;
-      if (url) {
-        song.cover = url;
-        if (onLoaded) onLoaded(url);
-      }
-    });
-  }
-
   function ensureDurationLoaded(song) {
     if (song.duration || song.durationLoading) return;
     song.durationLoading = true;
@@ -566,7 +465,7 @@
 
       row.innerHTML = `
         <div class="relative flex-shrink-0">
-          <img src="${song.cover || placeholderCover(song.gradient)}" alt="${song.title}" class="w-14 h-14 rounded-lg object-cover shadow-sm" />
+          <img src="${song.cover}" alt="${song.title}" class="w-14 h-14 rounded-lg object-cover shadow-sm" />
           ${isCurrent && isPlaying ? `
             <div class="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center">
               <div class="flex items-end gap-0.5 h-3.5">
@@ -609,11 +508,6 @@
 
       playlistEl.appendChild(row);
 
-      ensureCoverLoaded(song, (url) => {
-        const imgEl = row.querySelector("img");
-        if (imgEl) imgEl.src = url;
-        if (currentSongId === song.id) playerCover.src = url;
-      });
       ensureDurationLoaded(song);
     });
   }
@@ -632,16 +526,13 @@
     if (currentQueuePos === -1) currentQueuePos = 0;
 
     audio.src = song.src;
-    playerCover.src = song.cover || placeholderCover(song.gradient);
+    playerCover.src = song.cover;
     playerTitle.textContent = song.title;
     playerArtist.textContent = song.artist;
 
     crossfadeBackground(song.gradient);
     renderPlaylist();
     updateMediaSessionMetadata(song);
-    ensureCoverLoaded(song, (url) => {
-      if (currentSongId === song.id) playerCover.src = url;
-    });
 
     if (autoplay) {
       audio.play().then(() => { isPlaying = true; updatePlayIcon(); renderPlaylist(); }).catch(() => {});
@@ -655,7 +546,7 @@
       title: song.title,
       artist: song.artist,
       album: song.tags.join(", "),
-      artwork: song.cover ? [{ src: song.cover, sizes: "512x512", type: "image/jpeg" }] : [],
+      artwork: [{ src: song.cover, sizes: "512x512", type: "image/jpeg" }],
     });
   }
 
@@ -879,12 +770,11 @@
   currentQueue = filteredSongs;
   currentQueuePos = 0;
   bgLayerA.style.background = gradientCss(firstSong.gradient);
-  playerCover.src = placeholderCover(firstSong.gradient);
+  playerCover.src = firstSong.cover;
   playerTitle.textContent = firstSong.title;
   playerArtist.textContent = firstSong.artist;
   audio.src = firstSong.src;
   updateMediaSessionMetadata(firstSong);
-  ensureCoverLoaded(firstSong, (url) => { if (currentSongId === firstSong.id) playerCover.src = url; });
   renderPlaylist();
 </script>
 
