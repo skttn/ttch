@@ -189,84 +189,143 @@
   <audio id="audioPlayer" preload="metadata"></audio>
 
 <script>
-  const playlists = [
-    {
-      name: "Chill Vibes",
-      icon: "🌅",
-      songs: [
-        { title: "Sunset Drive", artist: "SoundHelix Ensemble", composer: "A. Rivera", cover: "https://picsum.photos/seed/musicone/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", gradient: ["#fbc2eb", "#a6c1ee"] },
-        { title: "Golden Hour", artist: "Harmony Waves", composer: "L. Bennett", cover: "https://picsum.photos/seed/musictwo/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", gradient: ["#f6d365", "#fda085"] },
-        { title: "Ocean Drift", artist: "Blue Coast", composer: "M. Alvarez", cover: "https://picsum.photos/seed/musicthree/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", gradient: ["#84fab0", "#8fd3f4"] },
-        { title: "Midnight Bloom", artist: "Luna Bay", composer: "S. Novak", cover: "https://picsum.photos/seed/musicfour/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", gradient: ["#a18cd1", "#fbc2eb"] }
-      ]
-    },
-    {
-      name: "Workout Energy",
-      icon: "🔥",
-      songs: [
-        { title: "Neon City", artist: "Pulse Rider", composer: "D. Kessler", cover: "https://picsum.photos/seed/musicfive/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", gradient: ["#ff9a9e", "#ff6a6a"] },
-        { title: "Iron Pulse", artist: "Steel Beat", composer: "R. Okafor", cover: "https://picsum.photos/seed/musicseven/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3", gradient: ["#f83600", "#f9d423"] },
-        { title: "Fast Lane", artist: "Turbo Crew", composer: "J. Park", cover: "https://picsum.photos/seed/musiceight/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3", gradient: ["#ff512f", "#dd2476"] },
-        { title: "Adrenaline Rush", artist: "Redline", composer: "T. Ibarra", cover: "https://picsum.photos/seed/musicnine/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3", gradient: ["#f7971e", "#ffd200"] }
-      ]
-    },
-    {
-      name: "Focus Flow",
-      icon: "🎧",
-      songs: [
-        { title: "Deep Work", artist: "Quiet Mind", composer: "E. Larsson", cover: "https://picsum.photos/seed/musicten/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3", gradient: ["#89f7fe", "#66a6ff"] },
-        { title: "Calm Mind", artist: "Stillwater", composer: "N. Petrova", cover: "https://picsum.photos/seed/musiceleven/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3", gradient: ["#a1c4fd", "#c2e9fb"] },
-        { title: "Quiet Hours", artist: "Nightlight", composer: "H. Tanaka", cover: "https://picsum.photos/seed/musictwelve/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3", gradient: ["#d4fc79", "#96e6a1"] },
-        { title: "Clear Sky", artist: "Horizon Line", composer: "C. Dubois", cover: "https://picsum.photos/seed/musicthirteen/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3", gradient: ["#e0c3fc", "#8ec5fc"] }
-      ]
-    },
-    {
-      name: "Weekend Party",
-      icon: "🎉",
-      songs: [
-        { title: "Wildflower Fields", artist: "Meadow Sound", composer: "A. Kowalski", cover: "https://picsum.photos/seed/musicsix/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", gradient: ["#fddb92", "#d1fdff"] },
-        { title: "Dance Floor", artist: "Glitter Crew", composer: "V. Moreau", cover: "https://picsum.photos/seed/musicfourteen/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3", gradient: ["#f857a6", "#ff5858"] },
-        { title: "Night Out", artist: "City Lights", composer: "B. Osei", cover: "https://picsum.photos/seed/musicfifteen/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3", gradient: ["#7f00ff", "#e100ff"] },
-        { title: "Confetti", artist: "Party Pack", composer: "K. Lindqvist", cover: "https://picsum.photos/seed/musicsixteen/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3", gradient: ["#ffd452", "#ff6a88"] }
-      ]
-    },
-    {
-      name: "Love Ballads",
-      icon: "💔",
-      songs: [
-        { title: "Slow Fade", artist: "Velvet Voice", composer: "O. Fischer", cover: "https://picsum.photos/seed/musicseventeen/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", gradient: ["#ffafbd", "#ffc3a0"] },
-        { title: "Paper Hearts", artist: "Soft Echo", composer: "I. Sorensen", cover: "https://picsum.photos/seed/musiceighteen/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", gradient: ["#ff9a9e", "#fad0c4"] },
-        { title: "Still With You", artist: "Amber Rose", composer: "F. Costa", cover: "https://picsum.photos/seed/musicnineteen/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", gradient: ["#f6d5f7", "#fbe9d7"] },
-        { title: "Letters Unsent", artist: "Rainy Bay", composer: "P. Nowak", cover: "https://picsum.photos/seed/musictwenty/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3", gradient: ["#e6dee9", "#ffc0cb"] }
-      ]
-    },
-    {
-      name: "Nhạc Trẻ",
-      icon: "🎶",
-      songs: [
-        { title: "Cảm Ơn (Cảm ơn cuộc đời tươi đẹp)", artist: "Song Ca Nam Nữ", composer: "Nhật Ngân", cover: "https://picsum.photos/seed/ttch131/300/300", src: "https://pub-efdb0d7dd4894c93ba0a9425a5c25bdf.r2.dev/" + encodeURIComponent("🎵 Cám Ơn • Song Ca Nam Nữ (TTCH #131).mp3"), gradient: ["#ffdde1", "#ee9ca7"] },
-        { title: "Hãy Yêu", artist: "Đơn Ca Nữ", composer: "Tâm Anh", cover: "https://picsum.photos/seed/ttch77/300/300", src: "https://pub-efdb0d7dd4894c93ba0a9425a5c25bdf.r2.dev/" + encodeURIComponent("🎵 Hãy Yêu • Đơn Ca Nữ (TTCH #77).mp3"), gradient: ["#fff1eb", "#ace0f9"] },
-        { title: "Đôi Bờ Tâm Tư", artist: "Đơn Ca Nam", composer: "Nhạc Ý", cover: "https://picsum.photos/seed/ttch94/300/300", src: "https://pub-efdb0d7dd4894c93ba0a9425a5c25bdf.r2.dev/" + encodeURIComponent("🎵 Đôi Bờ Tâm Tư (Nhạc Nước Ngoài) • Đơn Ca Nam (TTCH #94).mp3"), gradient: ["#d9afd9", "#97d9e1"] }
-      ]
-    }
+  const R2_BASE = "https://pub-efdb0d7dd4894c93ba0a9425a5c25bdf.r2.dev/";
+  const ALL_TAG = "Tất cả";
+
+  const GRADIENTS = [
+    ["#fbc2eb", "#a6c1ee"], ["#f6d365", "#fda085"], ["#84fab0", "#8fd3f4"], ["#a18cd1", "#fbc2eb"],
+    ["#ff9a9e", "#ff6a6a"], ["#f83600", "#f9d423"], ["#ff512f", "#dd2476"], ["#f7971e", "#ffd200"],
+    ["#89f7fe", "#66a6ff"], ["#a1c4fd", "#c2e9fb"], ["#d4fc79", "#96e6a1"], ["#e0c3fc", "#8ec5fc"],
+    ["#fddb92", "#d1fdff"], ["#f857a6", "#ff5858"], ["#7f00ff", "#e100ff"], ["#ffd452", "#ff6a88"],
+    ["#ffafbd", "#ffc3a0"], ["#ff9a9e", "#fad0c4"], ["#f6d5f7", "#fbe9d7"], ["#e6dee9", "#ffc0cb"],
+    ["#ffdde1", "#ee9ca7"], ["#fff1eb", "#ace0f9"], ["#d9afd9", "#97d9e1"], ["#c2e9fb", "#a1c4fd"],
+    ["#fcb69f", "#ffecd2"], ["#96fbc4", "#f9f586"], ["#a8edea", "#fed6e3"], ["#d9a7c7", "#fffcdc"]
   ];
 
-  // tag every song with its playlist/song coordinates + empty duration cache
-  playlists.forEach((pl, plIdx) => {
-    pl.songs.forEach((song, songIdx) => {
-      song.playlistIndex = plIdx;
-      song.songIndex = songIdx;
-      song.duration = null;
-    });
+  // raw object keys exactly as uploaded to Cloudflare R2, tagged by mood/genre
+  const songFiles = [
+    { file: "🎵 Đừng Chờ Nữa (Tay Trái Chỉ Trăng - Nhạc Ngoại) • Đơn Ca Nữ (TTCH - Số 317).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "🎵 Đôi Bờ Tâm Tư (Đôi Bờ - Nhạc ngoại) • Đơn Ca Nam 2 (TTCH - Số 94).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "🎵 Đôi Bờ Tâm Tư (Đôi Bờ - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 94).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "🎵 Xây Đắp Tình Yêu (Phi Điểu Và Ve Sầu - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 417).mp3", tags: ["Nhạc Trẻ", "Bình Yên"] },
+    { file: "🎵 Xuân Thái Bình- (Magic Boulevard) (Ngày Vui Năm Ấy - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 791).mp3", tags: ["Tích Cực", "Nhạc Trẻ"] },
+    { file: "🎵 Về Đây Thôi (Trở Về Mái Nhà Xưa - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 578).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "🎵 Về Đây Thôi (Trở Về Mái Nhà Xưa - Nhạc ngoại) • Song Ca Nam Nữ (TTCH - Số 578).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "🎵 Về Đây Ngay Nhé (Un-Break My Heart - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 469).mp3", tags: ["Trữ Tình"] },
+    { file: "🎵 Về Với Thiên Nhiên (Tinh Ca Du Mục - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 39).mp3", tags: ["Tích Cực"] },
+    { file: "🎵 Viens M’Embrasser - Yêu Thiên Nhiên (Lại Gần Hôn Anh - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 805).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "🎵 Từ Tâm Chiếu Hoài- (Paroles Paroles) (Những Lời Mê Hoặc - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 792).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "🎵 Tình Mãi Chất Ngất (Casablanca - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 435).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "🎵 Tình Bao La (Trở Về Mái Nhà Xưa - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 83).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "🎵 Tâm Nguyện (Over And Over - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 15).mp3", tags: ["Cổ Điển", "Tích Cực"] },
+    { file: "🎵 Tâm Giác (Green Fields - Nhạc ngoại) • Đơn Ca Nữ 2 (TTCH - Số 6).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "🎵 Tâm Giác (Green Fields - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 6).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "🎵 Trở Về Quê Hương (Xin Chào Việt Nam - Nhạc ngoại) • Đơn Ca Nữ 2 (TTCH - Số 96).mp3", tags: ["Tích Cực", "Bình Yên"] },
+    { file: "🎵 Trở Về Quê Hương (Xin Chào Việt Nam - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 96).mp3", tags: ["Tích Cực", "Bình Yên"] },
+    { file: "🎵 Trên Đồi Vắng (Triệu Hoa Hồng - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 8).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "🎵 Trái Tim Cho Đời (Trời Còn Mưa Mãi - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 591).mp3", tags: ["Trữ Tình"] },
+    { file: "🎵 Thực Tập Tĩnh Tâm (Một Triệu Khả Năng - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 411).mp3", tags: ["Nhạc Trẻ", "Bình Yên"] },
+    { file: "🎵 Thắp Sáng Niềm Tin (Bản Tình Ca Đơn Côi - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 594).mp3", tags: ["Tích Cực", "Trữ Tình", "Nhạc Trẻ"] },
+    { file: "🎵 Thân Thương Lâu Rồi (Mùa Hoa Anh Đào - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 211).mp3", tags: ["Trữ Tình"] },
+    { file: "🎵 Thiên Nhiên Bao Dung (Nụ Hồng Mong Manh - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 181).mp3", tags: ["Trữ Tình", "Nhạc Trẻ"] },
+    { file: "🎵 Ta Cùng Nhau Hạnh Phúc (Shalala Lala - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 465).mp3", tags: ["Tích Cực", "Nhạc Trẻ"] },
+    { file: "🎵 Ta Chung Vui (APT - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 179).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "🎵 Sống Xuân (Nắng Xuân (Solenzara) - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 782).mp3", tags: ["Tích Cực", "Trữ Tình"] },
+    { file: "🎵 Sống Nhàn (The Sound Of Silence - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 433).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "🎵 Sống Chung An Hòa (Right Here Waiting - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 451).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
+    { file: "🎵 Sáng Tâm (Ánh Trăng Nói Hộ Lòng Tôi - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 781).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "🎵 Sans Elle- Biết Chính Mình (Nếu Vắng Nàng - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 803).mp3", tags: ["Trữ Tình"] },
+    { file: "🎵 Quyết Dừng (Tiếc Thương (Donna Donna) - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 229).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
+    { file: "🎵 Quay Về Đây (Cây Thuỳ Dương - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 785).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "🎵 Quay Về Trân Quý (Vũ Nữ Thân Gầy (La Cumparsa) - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 784).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "🎵 Quay Về (Chiều Matxcova - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 41).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "🎵 Oh! Mon Amour (Tình Yêu Ôi Tình Yêu - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 804).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "🎵 Oh! Mon Amour (Tình Yêu Ôi Tình Yêu - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 804).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "🎵 Nổi Gió Lên (Nối Gió Rồi - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 414).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "🎵 Nue Comme La Mer- Mùa Hè Như Xuân (Mùa Hè Tuyết Rơi - Nhạc ngoại) • Đơn Ca Nữ 2 (TTCH - Số 797).mp3", tags: ["Trữ Tình", "Nhạc Trẻ"] },
+    { file: "🎵 Nue Comme La Mer- Mùa Hè Như Xuân (Mùa Hè Tuyết Rơi - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 797).mp3", tags: ["Trữ Tình", "Nhạc Trẻ"] },
+    { file: "🎵 Niềm Tin Sâu (Hello - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 84).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
+    { file: "🎵 Những Nụ Tình Xanh (Tous Les Garcons Et Les Filles) (Những Nụ Tình Xanh (Tous Les Garcons Et Les Filles) - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 799).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "🎵 Nhớ Về Người (Đau Thương Chỉ Vì Em - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 590).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "🎵 Nhớ Ngồi Bình Yên (Em Đẹp Như Mơ - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 43).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "🎵 Ngồi Bình Yên Tuyệt Vời (Chuyện Tình Yêu - Nhạc ngoại) • Đơn Ca Nữ 2 (TTCH - Số 44).mp3", tags: ["Trữ Tình", "Tích Cực"] },
+    { file: "🎵 Ngồi Bình Yên Tuyệt Vời (Chuyện Tình Yêu - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 44).mp3", tags: ["Trữ Tình", "Tích Cực"] },
+    { file: "🎵 Ngay Đây Thôi (It's Now Or Never - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 85).mp3", tags: ["Cổ Điển", "Trữ Tình", "Bình Yên"] },
+    { file: "🎵 Một Ngày Quyết Tâm (Mùa Thu Lá Bay - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 158).mp3", tags: ["Trữ Tình"] },
+    { file: "🎵 Mãi Được Yêu (Độ Ta Không Độ Nàng - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 680).mp3", tags: ["Nhạc Trẻ"] },
+    { file: "🎵 Maman Oh Maman-Về Lại Nguồn Tâm Sáng (Người Mẹ Hiền Yêu Dấu - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 794).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "🎵 Le Tems De L'Amour - Ngồi Bình Yên (Mùa Tình Yêu - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 807).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "🎵 La Chanson D’Orphee (Bài Ngợi Ca Tình Yêu - Nhạc ngoại) • Song Ca Nam Nữ (TTCH - Số 798).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
+    { file: "🎵 Không Ngăn Cách (Người Tình Mùa Đông - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 104).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "🎵 Khiêm Nhường (Em Đẹp Như Mơ (Elle Était Si Jolie) - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 783).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "🎵 Học Cách Lắng Nghe (Búp Bê Không Tình Yêu (Poupeé De Cire, De Son) - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 786).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "🎵 Hạnh Phúc Bình Dị (Childhood Memories - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 89).mp3", tags: ["Bình Yên", "Cổ Điển"] },
+    { file: "🎵 Hòa Xuân Sống (Triệu Rose - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 744).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "🎵 Hòa Chung Niềm Vui (Colors Of The Wind - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 457).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "🎵 Giác Nhanh Lên (Tuyết Rơi - Tombe La Neige - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 36).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
+    { file: "🎵 Giác Ngộ (My Heart Will Go On - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 16).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
+    { file: "🎵 Em Quay Về (Mây Lang Thang - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 187).mp3", tags: ["Trữ Tình", "Nhạc Trẻ"] },
+    { file: "🎵 Em Biết Tu (Khi Xưa Ta Bé - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 57).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "🎵 Dhamma Sota (500 Miles - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 72).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "🎵 Delilah- Tình Đẹp (Tình Hận - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 795).mp3", tags: ["Trữ Tình"] },
+    { file: "🎵 Cần Kiếm Chi (The End Of The World - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 447).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "🎵 Cùng Nhau Tu (Guantanamera - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 80).mp3", tags: ["Cổ Điển", "Tích Cực"] },
+    { file: "🎵 Cùng Nhau Bình Yên (If We Hold On Together - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 470).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "🎵 Cùng Có Nhau (Vĩnh Biệt Màu Xanh - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 342).mp3", tags: ["Trữ Tình"] },
+    { file: "🎵 Có Nhớ Yêu Ta Chưa (Will You Love Me Tomorrow - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 438).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "🎵 Con Đường Giải Thoát (Love Story - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 13).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "🎵 Chăm Sóc Thiên Nhiên (Yesterday - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 431).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "🎵 Chăm Sóc Má Ba (Forever - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 453).mp3", tags: ["Trữ Tình"] },
+    { file: "🎵 Chuyển Tâm (Đôi Bờ - Nhạc ngoại) • Đơn Ca Nữ 2 (TTCH - Số 40).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "🎵 Chuyển Tâm (Đôi Bờ - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 40).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "🎵 Chung Sống An (I'd Love You To Want Me - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 443).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "🎵 Cha Kính Yêu (Papa - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 434).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "🎵 Bọt Bóng (Triệu Hoa Hồng - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 7).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "🎵 Bọt Bóng (Triệu Hoa Hồng - Nhạc ngoại) • Đơn Ca Nữ  2 (TTCH - Số 7).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "🎵 Buông Xả (Love Is Blue - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 14).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "🎵 Biết Ơn (Over And Over - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 583).mp3", tags: ["Cổ Điển", "Tích Cực"] },
+    { file: "🎵 Biết Ơn (Over And Over - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 583).mp3", tags: ["Cổ Điển", "Tích Cực"] },
+    { file: "🎵 Biết Yêu Chính Ta (Good Morning - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 178).mp3", tags: ["Tích Cực"] },
+    { file: "🎵 Biết Sống Thanh Cao (Faithful - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 442).mp3", tags: ["Bình Yên", "Trữ Tình"] }
+  ];
+
+  function parseSongMeta(file) {
+    const m = file.match(/^🎵\s*(.+?)\s*\((.+)\)\s*•\s*(.+?)\s*\(TTCH\s*-\s*Số\s*(\d+)\)\.mp3$/u);
+    if (!m) return { title: file.replace(/\.mp3$/i, "").replace(/^🎵\s*/, ""), artist: "TTCH" };
+    return {
+      title: m[1].replace(/\s+/g, " ").trim(),
+      artist: m[3].replace(/\s+/g, " ").trim(),
+    };
+  }
+
+  const allSongs = songFiles.map((entry, idx) => {
+    const meta = parseSongMeta(entry.file);
+    return {
+      id: idx,
+      file: entry.file,
+      tags: entry.tags,
+      title: meta.title,
+      artist: meta.artist,
+      src: R2_BASE + encodeURIComponent(entry.file),
+      gradient: GRADIENTS[idx % GRADIENTS.length],
+      duration: null,
+      durationLoading: false,
+      cover: null,
+      coverLoading: false,
+    };
   });
 
+  const allTags = [ALL_TAG, ...Array.from(new Set(allSongs.flatMap((s) => s.tags))).sort((a, b) => a.localeCompare(b, "vi"))];
+
   // ---- State ----
-  let currentPlaylistIndex = 0;  // playlist tab currently being viewed/searched
-  let playingPlaylistIndex = 0;  // playlist the loaded track belongs to
-  let currentSongIndex = 0;      // song index within playingPlaylistIndex
+  let currentTag = ALL_TAG;
+  let isSearching = false;
+  let filteredSongs = [];
+  let currentSongId = null;
+  let currentQueue = [];
+  let currentQueuePos = 0;
   let isPlaying = false;
   let repeatMode = "none"; // none -> all -> one -> none
-  let filteredSongs = [...playlists[currentPlaylistIndex].songs];
   let activeBgLayer = "A";
 
   // ---- DOM refs ----
@@ -324,20 +383,104 @@
     activeBgLayer = activeBgLayer === "A" ? "B" : "A";
   }
 
-  // ---- Rendering playlist tabs ----
+  // gradient-tinted placeholder cover shown until the mp3's embedded artwork (if any) loads
+  function placeholderCover(gradient) {
+    const [c1, c2] = gradient;
+    const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='200' height='200'><defs><radialGradient id='g' cx='50%' cy='50%' r='75%'><stop offset='0%' stop-color='${c1}'/><stop offset='100%' stop-color='${c2}'/></radialGradient></defs><rect width='200' height='200' fill='url(#g)'/><text x='50%' y='56%' font-size='84' text-anchor='middle' dominant-baseline='middle'>🎵</text></svg>`;
+    return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
+  }
+
+  // ---- Embedded ID3v2 cover art extraction (reads only the tag header, no full download) ----
+  async function extractCoverFromMp3(url) {
+    try {
+      const headRes = await fetch(url, { headers: { Range: "bytes=0-9" } });
+      const headBuf = await headRes.arrayBuffer();
+      if (headBuf.byteLength < 10) return null;
+      const headView = new DataView(headBuf);
+      if (String.fromCharCode(headView.getUint8(0), headView.getUint8(1), headView.getUint8(2)) !== "ID3") return null;
+      const majorVersion = headView.getUint8(3);
+      const synchsafe = (b0, b1, b2, b3) => (b0 << 21) | (b1 << 14) | (b2 << 7) | b3;
+      const tagSize = synchsafe(headView.getUint8(6), headView.getUint8(7), headView.getUint8(8), headView.getUint8(9));
+      const totalTagBytes = 10 + tagSize;
+
+      const fullRes = await fetch(url, { headers: { Range: `bytes=0-${totalTagBytes - 1}` } });
+      const buf = await fullRes.arrayBuffer();
+      const view = new DataView(buf);
+
+      let offset = 10;
+      while (offset + 10 <= buf.byteLength && offset < totalTagBytes) {
+        const frameId = String.fromCharCode(view.getUint8(offset), view.getUint8(offset + 1), view.getUint8(offset + 2), view.getUint8(offset + 3));
+        if (!frameId.trim() || frameId.charCodeAt(0) === 0) break;
+        const frameSize = majorVersion >= 4
+          ? synchsafe(view.getUint8(offset + 4), view.getUint8(offset + 5), view.getUint8(offset + 6), view.getUint8(offset + 7))
+          : (view.getUint8(offset + 4) * 0x1000000) + (view.getUint8(offset + 5) << 16) + (view.getUint8(offset + 6) << 8) + view.getUint8(offset + 7);
+        const frameStart = offset + 10;
+
+        if (frameId === "APIC" && frameStart + frameSize <= buf.byteLength) {
+          let p = frameStart;
+          const enc = view.getUint8(p); p += 1;
+          let mimeEnd = p;
+          while (mimeEnd < buf.byteLength && view.getUint8(mimeEnd) !== 0) mimeEnd++;
+          const mimeType = new TextDecoder("iso-8859-1").decode(buf.slice(p, mimeEnd)) || "image/jpeg";
+          p = mimeEnd + 1;
+          p += 1; // picture type byte
+          if (enc === 1 || enc === 2) {
+            while (p + 1 < buf.byteLength && !(view.getUint8(p) === 0 && view.getUint8(p + 1) === 0)) p += 2;
+            p += 2;
+          } else {
+            while (p < buf.byteLength && view.getUint8(p) !== 0) p++;
+            p += 1;
+          }
+          const imgData = buf.slice(p, frameStart + frameSize);
+          return URL.createObjectURL(new Blob([imgData], { type: mimeType }));
+        }
+        offset = frameStart + frameSize;
+      }
+      return null;
+    } catch (err) {
+      return null;
+    }
+  }
+
+  function ensureCoverLoaded(song, onLoaded) {
+    if (song.cover || song.coverLoading) return;
+    song.coverLoading = true;
+    extractCoverFromMp3(song.src).then((url) => {
+      song.coverLoading = false;
+      if (url) {
+        song.cover = url;
+        if (onLoaded) onLoaded(url);
+      }
+    });
+  }
+
+  function ensureDurationLoaded(song) {
+    if (song.duration || song.durationLoading) return;
+    song.durationLoading = true;
+    const probe = new Audio();
+    probe.preload = "metadata";
+    probe.src = song.src;
+    probe.addEventListener("loadedmetadata", () => {
+      song.duration = probe.duration;
+      song.durationLoading = false;
+      updateDurationBadge(song.id);
+    });
+  }
+
+  // ---- Rendering tag tabs ----
   function renderTabs() {
     playlistTabsEl.innerHTML = "";
-    playlists.forEach((pl, idx) => {
+    allTags.forEach((tag) => {
       const tab = document.createElement("button");
-      const isActive = idx === currentPlaylistIndex;
+      const isActive = tag === currentTag;
       tab.className = `flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full text-base font-medium border transition ${
         isActive
           ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white shadow-md"
           : "bg-white/50 dark:bg-white/10 text-gray-600 dark:text-gray-300 border-white/60 dark:border-white/10 hover:bg-white/70 dark:hover:bg-white/20"
       }`;
-      tab.innerHTML = `<span>${pl.icon}</span><span>${pl.name}</span>${idx === playingPlaylistIndex ? '<span class="w-1.5 h-1.5 rounded-full bg-pink-400"></span>' : ""}`;
+      tab.textContent = tag;
       tab.addEventListener("click", () => {
-        currentPlaylistIndex = idx;
+        currentTag = tag;
         searchInput.value = "";
         applyFilter();
         renderTabs();
@@ -347,21 +490,20 @@
   }
 
   // ---- Rendering playlist ----
-  let isSearching = false;
-
   function applyFilter() {
     const q = searchInput.value.trim().toLowerCase();
     isSearching = q.length > 0;
 
-    if (!isSearching) {
-      filteredSongs = [...playlists[currentPlaylistIndex].songs];
-      playlistHeading.textContent = `${playlists[currentPlaylistIndex].icon} ${playlists[currentPlaylistIndex].name}`;
-    } else {
-      // search across every playlist, not just the active tab
-      filteredSongs = playlists.flatMap((pl) => pl.songs).filter(
-        (s) => s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q)
-      );
+    if (isSearching) {
+      // search across every tag, not just the active one
+      filteredSongs = allSongs.filter((s) => s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q));
       playlistHeading.textContent = `Kết quả tìm kiếm cho "${searchInput.value.trim()}"`;
+    } else if (currentTag === ALL_TAG) {
+      filteredSongs = allSongs.slice();
+      playlistHeading.textContent = `🎵 ${ALL_TAG}`;
+    } else {
+      filteredSongs = allSongs.filter((s) => s.tags.includes(currentTag));
+      playlistHeading.textContent = `🏷️ ${currentTag}`;
     }
     renderPlaylist();
   }
@@ -371,13 +513,13 @@
     emptyState.classList.toggle("hidden", filteredSongs.length > 0);
 
     filteredSongs.forEach((song) => {
-      const isCurrent = song.playlistIndex === playingPlaylistIndex && song.songIndex === currentSongIndex;
+      const isCurrent = song.id === currentSongId;
       const row = document.createElement("div");
       row.className = `song-row fade-in flex items-center gap-3 px-3 py-2.5 rounded-2xl cursor-pointer transition hover:bg-white/40 dark:hover:bg-white/10 ${isCurrent ? "active" : ""}`;
 
       row.innerHTML = `
         <div class="relative flex-shrink-0">
-          <img src="${song.cover}" alt="${song.title}" class="w-14 h-14 rounded-lg object-cover shadow-sm" />
+          <img src="${song.cover || placeholderCover(song.gradient)}" alt="${song.title}" class="w-14 h-14 rounded-lg object-cover shadow-sm" />
           ${isCurrent && isPlaying ? `
             <div class="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center">
               <div class="flex items-end gap-0.5 h-3.5">
@@ -390,14 +532,11 @@
         <div class="min-w-0 flex-1">
           <p class="font-medium text-gray-900 dark:text-gray-100 line-clamp-2 text-base md:text-lg" title="${song.title}">${song.title}</p>
           <p class="text-sm md:text-base text-gray-500 dark:text-gray-400 truncate">${song.artist}</p>
-          <p class="md:hidden text-xs text-gray-500 dark:text-gray-400 truncate">Nhạc sĩ: ${song.composer || "—"}</p>
+          <div class="flex flex-wrap gap-1 mt-1">
+            ${song.tags.map((t) => `<span class="text-[10px] font-medium text-gray-500 dark:text-gray-400 bg-black/5 dark:bg-white/10 px-2 py-0.5 rounded-full">${t}</span>`).join("")}
+          </div>
         </div>
-        <div class="hidden md:block w-32 lg:w-40 flex-shrink-0">
-          <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Nhạc sĩ</p>
-          <p class="text-sm text-gray-500 dark:text-gray-400 truncate">${song.composer || "—"}</p>
-        </div>
-        ${isSearching ? `<span class="hidden sm:inline-flex flex-shrink-0 items-center gap-1 text-xs font-medium text-gray-500 dark:text-gray-400 bg-black/5 dark:bg-white/10 px-2 py-1 rounded-full">${playlists[song.playlistIndex].icon} ${playlists[song.playlistIndex].name}</span>` : ""}
-        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 tabular-nums flex-shrink-0" data-duration-for="${song.playlistIndex}-${song.songIndex}">
+        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 tabular-nums flex-shrink-0" data-duration-for="${song.id}">
           ${song.duration ? formatTime(song.duration) : "--:--"}
         </span>
         <button title="Tải về" class="row-download-btn flex-shrink-0 p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-black/5 dark:hover:bg-white/10 transition">
@@ -408,8 +547,7 @@
       `;
 
       row.addEventListener("click", () => {
-        currentPlaylistIndex = song.playlistIndex;
-        loadSong(song.playlistIndex, song.songIndex, true);
+        loadSong(song, true, filteredSongs);
       });
 
       row.querySelector(".row-download-btn").addEventListener("click", (e) => {
@@ -418,43 +556,40 @@
       });
 
       playlistEl.appendChild(row);
-    });
-  }
 
-  function updateDurationBadge(playlistIndex, songIndex) {
-    const song = playlists[playlistIndex].songs[songIndex];
-    const el = playlistEl.querySelector(`[data-duration-for="${playlistIndex}-${songIndex}"]`);
-    if (el) el.textContent = formatTime(song.duration);
-  }
-
-  // preload durations for the list display
-  playlists.forEach((pl) => {
-    pl.songs.forEach((song) => {
-      const probe = new Audio();
-      probe.preload = "metadata";
-      probe.src = song.src;
-      probe.addEventListener("loadedmetadata", () => {
-        song.duration = probe.duration;
-        updateDurationBadge(song.playlistIndex, song.songIndex);
+      ensureCoverLoaded(song, (url) => {
+        const imgEl = row.querySelector("img");
+        if (imgEl) imgEl.src = url;
+        if (currentSongId === song.id) playerCover.src = url;
       });
+      ensureDurationLoaded(song);
     });
-  });
+  }
+
+  function updateDurationBadge(songId) {
+    const el = playlistEl.querySelector(`[data-duration-for="${songId}"]`);
+    const song = allSongs.find((s) => s.id === songId);
+    if (el && song) el.textContent = formatTime(song.duration);
+  }
 
   // ---- Player logic ----
-  function loadSong(playlistIndex, songIndex, autoplay) {
-    playingPlaylistIndex = playlistIndex;
-    currentSongIndex = songIndex;
-    const song = playlists[playlistIndex].songs[songIndex];
+  function loadSong(song, autoplay, queue) {
+    currentSongId = song.id;
+    currentQueue = queue && queue.length ? queue : filteredSongs;
+    currentQueuePos = currentQueue.findIndex((s) => s.id === song.id);
+    if (currentQueuePos === -1) currentQueuePos = 0;
 
     audio.src = song.src;
-    playerCover.src = song.cover;
+    playerCover.src = song.cover || placeholderCover(song.gradient);
     playerTitle.textContent = song.title;
     playerArtist.textContent = song.artist;
 
     crossfadeBackground(song.gradient);
-    renderTabs();
     renderPlaylist();
     updateMediaSessionMetadata(song);
+    ensureCoverLoaded(song, (url) => {
+      if (currentSongId === song.id) playerCover.src = url;
+    });
 
     if (autoplay) {
       audio.play().then(() => { isPlaying = true; updatePlayIcon(); renderPlaylist(); }).catch(() => {});
@@ -467,8 +602,8 @@
     navigator.mediaSession.metadata = new MediaMetadata({
       title: song.title,
       artist: song.artist,
-      album: playlists[song.playlistIndex].name,
-      artwork: [{ src: song.cover, sizes: "512x512", type: "image/jpeg" }],
+      album: song.tags.join(", "),
+      artwork: song.cover ? [{ src: song.cover, sizes: "512x512", type: "image/jpeg" }] : [],
     });
   }
 
@@ -489,7 +624,10 @@
   }
 
   function togglePlay() {
-    if (!audio.src) { loadSong(0, 0, true); return; }
+    if (!audio.src) {
+      if (filteredSongs.length) loadSong(filteredSongs[0], true, filteredSongs);
+      return;
+    }
     if (isPlaying) {
       audio.pause();
       isPlaying = false;
@@ -503,9 +641,9 @@
   }
 
   function nextSong() {
-    const songs = playlists[playingPlaylistIndex].songs;
-    const nextIndex = (currentSongIndex + 1) % songs.length;
-    loadSong(playingPlaylistIndex, nextIndex, isPlaying);
+    if (!currentQueue.length) return;
+    const nextPos = (currentQueuePos + 1) % currentQueue.length;
+    loadSong(currentQueue[nextPos], isPlaying, currentQueue);
   }
 
   function prevSong() {
@@ -513,9 +651,9 @@
       audio.currentTime = 0;
       return;
     }
-    const songs = playlists[playingPlaylistIndex].songs;
-    const prevIndex = (currentSongIndex - 1 + songs.length) % songs.length;
-    loadSong(playingPlaylistIndex, prevIndex, isPlaying);
+    if (!currentQueue.length) return;
+    const prevPos = (currentQueuePos - 1 + currentQueue.length) % currentQueue.length;
+    loadSong(currentQueue[prevPos], isPlaying, currentQueue);
   }
 
   function cycleRepeat() {
@@ -551,7 +689,7 @@
       // delay revoke so the browser has time to actually start the download
       setTimeout(() => URL.revokeObjectURL(url), 1000);
     } catch (err) {
-      // cross-origin sources without CORS (e.g. SoundHelix) block blob fetch, fall back to a direct link
+      // cross-origin sources without CORS block blob fetch, fall back to a direct link
       const link = document.createElement("a");
       link.href = song.src;
       link.download = filename;
@@ -564,7 +702,7 @@
   }
 
   function downloadCurrentSong() {
-    const song = playlists[playingPlaylistIndex].songs[currentSongIndex];
+    const song = allSongs.find((s) => s.id === currentSongId);
     if (song) downloadSong(song);
   }
 
@@ -582,11 +720,10 @@
   });
 
   audio.addEventListener("ended", () => {
-    const songs = playlists[playingPlaylistIndex].songs;
     if (repeatMode === "one") {
       audio.currentTime = 0;
       audio.play();
-    } else if (repeatMode === "all" || currentSongIndex < songs.length - 1) {
+    } else if (repeatMode === "all" || currentQueuePos < currentQueue.length - 1) {
       nextSong();
     } else {
       isPlaying = false;
@@ -682,16 +819,23 @@
   // ---- Init ----
   initTheme();
   initMediaSession();
-  const firstSong = playlists[0].songs[0];
-  bgLayerA.style.background = gradientCss(firstSong.gradient);
   renderTabs();
   applyFilter();
-  playerCover.src = firstSong.cover;
+
+  const firstSong = allSongs[0];
+  currentSongId = firstSong.id;
+  currentQueue = filteredSongs;
+  currentQueuePos = 0;
+  bgLayerA.style.background = gradientCss(firstSong.gradient);
+  playerCover.src = placeholderCover(firstSong.gradient);
   playerTitle.textContent = firstSong.title;
   playerArtist.textContent = firstSong.artist;
   audio.src = firstSong.src;
   updateMediaSessionMetadata(firstSong);
+  ensureCoverLoaded(firstSong, (url) => { if (currentSongId === firstSong.id) playerCover.src = url; });
+  renderPlaylist();
 </script>
+
 </body>
 </html>
 
