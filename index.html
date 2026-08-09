@@ -87,9 +87,8 @@
   <header class="sticky top-0 z-20 px-4 pt-5 pb-3 md:px-8">
     <div class="max-w-3xl mx-auto">
       <div class="flex items-center justify-between mb-4">
-        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100">🌅 Tỉnh Thức Chuyển Hóa</h1>
+        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100">☀️ Tỉnh Thức Chuyển Hóa</h1>
         <div class="flex items-center gap-2">
-          <span class="text-xs font-medium text-gray-500 dark:text-gray-400 bg-white/50 dark:bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/60 dark:border-white/10">Giao diện</span>
           <button id="themeToggleBtn" title="Chuyển sáng/tối" class="p-2 rounded-full bg-white/50 dark:bg-white/10 backdrop-blur-md border border-white/60 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-white/20 transition">
             <svg id="themeIconSun" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.36 6.36l-.7-.7M6.34 6.34l-.7-.7m12.02 0l-.7.7M6.34 17.66l-.7.7M12 7a5 5 0 100 10 5 5 0 000-10z" />
@@ -130,12 +129,12 @@
 
       <!-- Progress bar -->
       <div class="flex items-center gap-3 mb-2">
-        <span id="currentTime" class="text-xs font-medium text-gray-500 dark:text-gray-400 w-10 text-right tabular-nums">00:00</span>
+        <span id="currentTime" class="text-xs font-medium text-gray-500 dark:text-gray-300 w-10 text-right tabular-nums">00:00</span>
         <div id="progressTrack" class="relative flex-1 h-1.5 bg-black/10 dark:bg-white/10 rounded-full group">
           <div id="progressFill" class="absolute top-0 left-0 h-full bg-gray-800 dark:bg-gray-200 rounded-full" style="width:0%"></div>
           <div id="progressThumb" class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-gray-900 dark:bg-white rounded-full opacity-0 group-hover:opacity-100 transition" style="left:0%"></div>
         </div>
-        <span id="durationTime" class="text-xs font-medium text-gray-500 dark:text-gray-400 w-10 tabular-nums">00:00</span>
+        <span id="durationTime" class="text-xs font-medium text-gray-500 dark:text-gray-300 w-10 tabular-nums">00:00</span>
       </div>
 
       <div class="flex items-center justify-between gap-3">
@@ -599,9 +598,9 @@
   }
 
   function initTheme() {
+    // default to light mode regardless of system preference; only respect an explicit user choice
     const saved = localStorage.getItem("theme");
-    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    applyTheme(saved ? saved === "dark" : prefersDark);
+    applyTheme(saved === "dark");
   }
 
   themeToggleBtn.addEventListener("click", () => {
