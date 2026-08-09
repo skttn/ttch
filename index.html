@@ -76,7 +76,7 @@
   }
 </style>
 </head>
-<body class="min-h-screen text-gray-800 dark:text-gray-100 transition-colors duration-700">
+<body class="h-screen overflow-hidden flex flex-col text-gray-800 dark:text-gray-100 transition-colors duration-700">
 
   <!-- Crossfade gradient background layers -->
   <div id="bgLayerA" class="bg-layer" style="opacity:1;"></div>
@@ -84,7 +84,7 @@
   <div class="fixed inset-0 -z-[9] bg-white/40 dark:bg-black/60 transition-colors duration-700"></div>
 
   <!-- Header: floating search bar -->
-  <header class="sticky top-0 z-20 px-4 pt-5 pb-3 md:px-8 bg-white/95 dark:bg-gray-950/95 shadow-sm dark:shadow-black/20 transition-colors duration-700">
+  <header class="flex-shrink-0 px-4 pt-5 pb-3 md:px-8">
     <div class="max-w-3xl mx-auto">
       <div class="flex items-center justify-between mb-4">
         <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100">☀️ Tỉnh Thức Chuyển Hóa</h1>
@@ -116,8 +116,8 @@
     </div>
   </header>
 
-  <!-- Playlist -->
-  <main class="max-w-3xl mx-auto px-4 md:px-8 pb-40 pt-2">
+  <!-- Playlist (its own scroll region, bounded strictly below the header) -->
+  <main class="flex-1 overflow-y-auto max-w-3xl w-full mx-auto px-4 md:px-8 pb-40 pt-2">
     <h2 id="playlistHeading" class="hidden text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 px-1">Danh sách phát</h2>
     <div id="playlist" class="flex flex-col gap-1.5"></div>
     <p id="emptyState" class="hidden text-center text-gray-400 dark:text-gray-500 py-10">Không tìm thấy bài hát nào phù hợp.</p>
@@ -210,6 +210,18 @@
 <script>
   const R2_BASE = "https://pub-efdb0d7dd4894c93ba0a9425a5c25bdf.r2.dev/";
   const ALL_TAG = "Tất cả";
+
+  // Real Unsplash nature photos (no people), cycled across the playlist
+  const NATURE_COVERS = [
+    "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=300&h=300&fit=crop&auto=format&q=80", // núi non lúc hoàng hôn
+    "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=300&h=300&fit=crop&auto=format&q=80", // sương sớm trên đỉnh núi
+    "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=300&h=300&fit=crop&auto=format&q=80", // núi tuyết soi bóng mặt hồ
+    "https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=300&h=300&fit=crop&auto=format&q=80", // thác nước giữa rừng
+  ];
+
+  function natureCover(idx) {
+    return NATURE_COVERS[idx % NATURE_COVERS.length];
+  }
 
   const GRADIENTS = [
     ["#fbc2eb", "#a6c1ee"], ["#f6d365", "#fda085"], ["#84fab0", "#8fd3f4"], ["#a18cd1", "#fbc2eb"],
@@ -337,7 +349,7 @@
       gradient: GRADIENTS[idx % GRADIENTS.length],
       duration: null,
       durationLoading: false,
-      cover: `https://picsum.photos/seed/song${idx}/300/300`,
+      cover: natureCover(idx),
     };
   });
 
