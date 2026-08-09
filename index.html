@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Music • Apple Music Style Player</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  * { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; }
+
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+
+  .bg-layer {
+    position: fixed;
+    inset: 0;
+    z-index: -10;
+    transition: opacity 1200ms ease-in-out;
+  }
+
+  #progressTrack, #volumeTrack {
+    cursor: pointer;
+  }
+
+  input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    background: transparent;
+  }
+  input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    height: 12px;
+    width: 12px;
+    border-radius: 999px;
+    background: #ffffff;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+    margin-top: -4px;
+    cursor: pointer;
+  }
+  input[type="range"]::-webkit-slider-runnable-track {
+    height: 4px;
+    border-radius: 999px;
+    background: rgba(0,0,0,0.15);
+  }
+
+  .song-row.active {
+    background: rgba(255,255,255,0.55);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+  }
+
+  .spin-slow {
+    animation: spin 6s linear infinite;
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  .fade-in {
+    animation: fadeIn 300ms ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+</head>
+<body class="min-h-screen text-gray-800 transition-colors duration-700">
+
+  <!-- Crossfade gradient background layers -->
+  <div id="bgLayerA" class="bg-layer" style="opacity:1;"></div>
+  <div id="bgLayerB" class="bg-layer" style="opacity:0;"></div>
+  <div class="fixed inset-0 -z-[9] bg-white/40"></div>
+
+  <!-- Header: floating search bar -->
+  <header class="sticky top-0 z-20 px-4 pt-5 pb-3 md:px-8">
+    <div class="max-w-3xl mx-auto">
+      <div class="flex items-center justify-between mb-4">
+        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900">🎵 Music</h1>
+        <span class="text-xs font-medium text-gray-500 bg-white/50 backdrop-blur-md px-3 py-1 rounded-full border border-white/60">Apple Music Style</span>
+      </div>
+      <div class="relative">
+        <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 104.5 4.5a7.5 7.5 0 0012.15 12.15z" />
+        </svg>
+        <input
+          id="searchInput"
+          type="text"
+          placeholder="Tìm bài hát hoặc ca sĩ..."
+          class="w-full pl-11 pr-4 py-3 rounded-2xl bg-white/50 backdrop-blur-xl border border-white/60 shadow-lg shadow-black/5 focus:outline-none focus:ring-2 focus:ring-pink-400/60 placeholder-gray-500 text-gray-800 transition"
+        />
+      </div>
+
+      <!-- Playlist tabs -->
+      <div id="playlistTabs" class="flex items-center gap-2 mt-4 overflow-x-auto pb-1"></div>
+    </div>
+  </header>
+
+  <!-- Playlist -->
+  <main class="max-w-3xl mx-auto px-4 md:px-8 pb-40 pt-2">
+    <h2 id="playlistHeading" class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 px-1">Danh sách phát</h2>
+    <div id="playlist" class="flex flex-col gap-1.5"></div>
+    <p id="emptyState" class="hidden text-center text-gray-400 py-10">Không tìm thấy bài hát nào phù hợp.</p>
+  </main>
+
+  <!-- Player bar (fixed bottom) -->
+  <footer class="fixed bottom-0 left-0 right-0 z-30 px-3 pb-3 md:px-6 md:pb-5">
+    <div class="max-w-4xl mx-auto bg-white/60 backdrop-blur-2xl border border-white/70 rounded-3xl shadow-2xl shadow-black/10 px-4 py-3 md:px-6 md:py-4">
+
+      <!-- Progress bar -->
+      <div class="flex items-center gap-3 mb-2">
+        <span id="currentTime" class="text-xs font-medium text-gray-500 w-10 text-right tabular-nums">00:00</span>
+        <div id="progressTrack" class="relative flex-1 h-1.5 bg-black/10 rounded-full group">
+          <div id="progressFill" class="absolute top-0 left-0 h-full bg-gray-800 rounded-full" style="width:0%"></div>
+          <div id="progressThumb" class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-gray-900 rounded-full opacity-0 group-hover:opacity-100 transition" style="left:0%"></div>
+        </div>
+        <span id="durationTime" class="text-xs font-medium text-gray-500 w-10 tabular-nums">00:00</span>
+      </div>
+
+      <div class="flex items-center justify-between gap-3">
+        <!-- Cover + info -->
+        <div class="flex items-center gap-3 min-w-0 flex-1">
+          <img id="playerCover" src="" alt="cover" class="w-12 h-12 md:w-14 md:h-14 rounded-xl object-cover shadow-md flex-shrink-0" />
+          <div class="min-w-0">
+            <p id="playerTitle" class="font-semibold text-gray-900 truncate text-sm md:text-base">Chọn một bài hát</p>
+            <p id="playerArtist" class="text-xs md:text-sm text-gray-500 truncate">—</p>
+          </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="flex items-center gap-1 md:gap-3">
+          <button id="repeatBtn" title="Lặp lại" class="relative p-2 rounded-full text-gray-500 hover:text-gray-900 hover:bg-black/5 transition">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M17 2l4 4-4 4M3 12v-2a4 4 0 014-4h14M7 22l-4-4 4-4M21 12v2a4 4 0 01-4 4H3" />
+            </svg>
+            <span id="repeatOneBadge" class="hidden absolute -top-0.5 -right-0.5 text-[9px] font-bold bg-pink-500 text-white rounded-full w-3.5 h-3.5 items-center justify-center">1</span>
+          </button>
+
+          <button id="prevBtn" title="Bài trước" class="p-2 rounded-full text-gray-700 hover:bg-black/5 transition">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+          </button>
+
+          <button id="playBtn" title="Phát/Tạm dừng" class="p-3 rounded-full bg-gray-900 text-white hover:scale-105 active:scale-95 transition shadow-lg">
+            <svg id="playIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+            <svg id="pauseIcon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
+          </button>
+
+          <button id="nextBtn" title="Bài kế" class="p-2 rounded-full text-gray-700 hover:bg-black/5 transition">
+            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg>
+          </button>
+
+          <div class="hidden md:flex items-center gap-2 ml-2">
+            <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM19 12a4 4 0 00-2-3.46M22 12a7 7 0 00-3-5.75" />
+            </svg>
+            <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.8" class="w-20" />
+          </div>
+
+          <button id="downloadBtn" title="Tải về" class="p-2 rounded-full text-gray-700 hover:bg-black/5 transition">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+            </svg>
+          </button>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <audio id="audioPlayer" preload="metadata"></audio>
+
+<script>
+  const playlists = [
+    {
+      name: "Chill Vibes",
+      icon: "🌅",
+      songs: [
+        { title: "Sunset Drive", artist: "SoundHelix Ensemble", cover: "https://picsum.photos/seed/musicone/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", gradient: ["#fbc2eb", "#a6c1ee"] },
+        { title: "Golden Hour", artist: "Harmony Waves", cover: "https://picsum.photos/seed/musictwo/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3", gradient: ["#f6d365", "#fda085"] },
+        { title: "Ocean Drift", artist: "Blue Coast", cover: "https://picsum.photos/seed/musicthree/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", gradient: ["#84fab0", "#8fd3f4"] },
+        { title: "Midnight Bloom", artist: "Luna Bay", cover: "https://picsum.photos/seed/musicfour/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3", gradient: ["#a18cd1", "#fbc2eb"] }
+      ]
+    },
+    {
+      name: "Workout Energy",
+      icon: "🔥",
+      songs: [
+        { title: "Neon City", artist: "Pulse Rider", cover: "https://picsum.photos/seed/musicfive/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", gradient: ["#ff9a9e", "#ff6a6a"] },
+        { title: "Iron Pulse", artist: "Steel Beat", cover: "https://picsum.photos/seed/musicseven/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3", gradient: ["#f83600", "#f9d423"] },
+        { title: "Fast Lane", artist: "Turbo Crew", cover: "https://picsum.photos/seed/musiceight/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3", gradient: ["#ff512f", "#dd2476"] },
+        { title: "Adrenaline Rush", artist: "Redline", cover: "https://picsum.photos/seed/musicnine/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3", gradient: ["#f7971e", "#ffd200"] }
+      ]
+    },
+    {
+      name: "Focus Flow",
+      icon: "🎧",
+      songs: [
+        { title: "Deep Work", artist: "Quiet Mind", cover: "https://picsum.photos/seed/musicten/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3", gradient: ["#89f7fe", "#66a6ff"] },
+        { title: "Calm Mind", artist: "Stillwater", cover: "https://picsum.photos/seed/musiceleven/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3", gradient: ["#a1c4fd", "#c2e9fb"] },
+        { title: "Quiet Hours", artist: "Nightlight", cover: "https://picsum.photos/seed/musictwelve/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-12.mp3", gradient: ["#d4fc79", "#96e6a1"] },
+        { title: "Clear Sky", artist: "Horizon Line", cover: "https://picsum.photos/seed/musicthirteen/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-13.mp3", gradient: ["#e0c3fc", "#8ec5fc"] }
+      ]
+    },
+    {
+      name: "Weekend Party",
+      icon: "🎉",
+      songs: [
+        { title: "Wildflower Fields", artist: "Meadow Sound", cover: "https://picsum.photos/seed/musicsix/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3", gradient: ["#fddb92", "#d1fdff"] },
+        { title: "Dance Floor", artist: "Glitter Crew", cover: "https://picsum.photos/seed/musicfourteen/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-14.mp3", gradient: ["#f857a6", "#ff5858"] },
+        { title: "Night Out", artist: "City Lights", cover: "https://picsum.photos/seed/musicfifteen/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-15.mp3", gradient: ["#7f00ff", "#e100ff"] },
+        { title: "Confetti", artist: "Party Pack", cover: "https://picsum.photos/seed/musicsixteen/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-16.mp3", gradient: ["#ffd452", "#ff6a88"] }
+      ]
+    },
+    {
+      name: "Love Ballads",
+      icon: "💔",
+      songs: [
+        { title: "Slow Fade", artist: "Velvet Voice", cover: "https://picsum.photos/seed/musicseventeen/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3", gradient: ["#ffafbd", "#ffc3a0"] },
+        { title: "Paper Hearts", artist: "Soft Echo", cover: "https://picsum.photos/seed/musiceighteen/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3", gradient: ["#ff9a9e", "#fad0c4"] },
+        { title: "Still With You", artist: "Amber Rose", cover: "https://picsum.photos/seed/musicnineteen/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3", gradient: ["#f6d5f7", "#fbe9d7"] },
+        { title: "Letters Unsent", artist: "Rainy Bay", cover: "https://picsum.photos/seed/musictwenty/300/300", src: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3", gradient: ["#e6dee9", "#ffc0cb"] }
+      ]
+    },
+    {
+      name: "Nhạc Trẻ",
+      icon: "🎶",
+      songs: [
+        { title: "Cám Ơn", artist: "Song Ca Nam Nữ", cover: "https://picsum.photos/seed/ttch131/300/300", src: "nhac-tre/" + encodeURIComponent("🎵 Cám Ơn • Song Ca Nam Nữ (TTCH #131).mp3"), gradient: ["#ffdde1", "#ee9ca7"] },
+        { title: "Hãy Yêu", artist: "Đơn Ca Nữ", cover: "https://picsum.photos/seed/ttch77/300/300", src: "nhac-tre/" + encodeURIComponent("🎵 Hãy Yêu • Đơn Ca Nữ (TTCH #77).mp3"), gradient: ["#fff1eb", "#ace0f9"] },
+        { title: "Đôi Bờ Tâm Tư", artist: "Đơn Ca Nam", cover: "https://picsum.photos/seed/ttch94/300/300", src: "nhac-tre/" + encodeURIComponent("🎵 Đôi Bờ Tâm Tư (Nhạc Nước Ngoài) • Đơn Ca Nam (TTCH #94).mp3"), gradient: ["#d9afd9", "#97d9e1"] }
+      ]
+    }
+  ];
+
+  // tag every song with its playlist/song coordinates + empty duration cache
+  playlists.forEach((pl, plIdx) => {
+    pl.songs.forEach((song, songIdx) => {
+      song.playlistIndex = plIdx;
+      song.songIndex = songIdx;
+      song.duration = null;
+    });
+  });
+
+  // ---- State ----
+  let currentPlaylistIndex = 0;  // playlist tab currently being viewed/searched
+  let playingPlaylistIndex = 0;  // playlist the loaded track belongs to
+  let currentSongIndex = 0;      // song index within playingPlaylistIndex
+  let isPlaying = false;
+  let repeatMode = "none"; // none -> all -> one -> none
+  let filteredSongs = [...playlists[currentPlaylistIndex].songs];
+  let activeBgLayer = "A";
+
+  // ---- DOM refs ----
+  const audio = document.getElementById("audioPlayer");
+  const playlistTabsEl = document.getElementById("playlistTabs");
+  const playlistHeading = document.getElementById("playlistHeading");
+  const playlistEl = document.getElementById("playlist");
+  const emptyState = document.getElementById("emptyState");
+  const searchInput = document.getElementById("searchInput");
+
+  const playerCover = document.getElementById("playerCover");
+  const playerTitle = document.getElementById("playerTitle");
+  const playerArtist = document.getElementById("playerArtist");
+
+  const playBtn = document.getElementById("playBtn");
+  const playIcon = document.getElementById("playIcon");
+  const pauseIcon = document.getElementById("pauseIcon");
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  const repeatBtn = document.getElementById("repeatBtn");
+  const repeatOneBadge = document.getElementById("repeatOneBadge");
+  const volumeSlider = document.getElementById("volumeSlider");
+  const downloadBtn = document.getElementById("downloadBtn");
+
+  const progressTrack = document.getElementById("progressTrack");
+  const progressFill = document.getElementById("progressFill");
+  const progressThumb = document.getElementById("progressThumb");
+  const currentTimeEl = document.getElementById("currentTime");
+  const durationTimeEl = document.getElementById("durationTime");
+
+  const bgLayerA = document.getElementById("bgLayerA");
+  const bgLayerB = document.getElementById("bgLayerB");
+
+  // ---- Helpers ----
+  function formatTime(seconds) {
+    if (!isFinite(seconds) || seconds === null || isNaN(seconds)) return "00:00";
+    const m = Math.floor(seconds / 60);
+    const s = Math.floor(seconds % 60);
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+
+  function gradientCss([c1, c2]) {
+    return `radial-gradient(circle at 30% 20%, ${c1}, ${c2})`;
+  }
+
+  function crossfadeBackground(gradient) {
+    const showLayer = activeBgLayer === "A" ? bgLayerB : bgLayerA;
+    const hideLayer = activeBgLayer === "A" ? bgLayerA : bgLayerB;
+    showLayer.style.background = gradientCss(gradient);
+    showLayer.style.opacity = "1";
+    hideLayer.style.opacity = "0";
+    activeBgLayer = activeBgLayer === "A" ? "B" : "A";
+  }
+
+  // ---- Rendering playlist tabs ----
+  function renderTabs() {
+    playlistTabsEl.innerHTML = "";
+    playlists.forEach((pl, idx) => {
+      const tab = document.createElement("button");
+      const isActive = idx === currentPlaylistIndex;
+      tab.className = `flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium border transition ${
+        isActive
+          ? "bg-gray-900 text-white border-gray-900 shadow-md"
+          : "bg-white/50 text-gray-600 border-white/60 hover:bg-white/70"
+      }`;
+      tab.innerHTML = `<span>${pl.icon}</span><span>${pl.name}</span>${idx === playingPlaylistIndex ? '<span class="w-1.5 h-1.5 rounded-full bg-pink-400"></span>' : ""}`;
+      tab.addEventListener("click", () => {
+        currentPlaylistIndex = idx;
+        searchInput.value = "";
+        applyFilter();
+        renderTabs();
+      });
+      playlistTabsEl.appendChild(tab);
+    });
+  }
+
+  // ---- Rendering playlist ----
+  let isSearching = false;
+
+  function applyFilter() {
+    const q = searchInput.value.trim().toLowerCase();
+    isSearching = q.length > 0;
+
+    if (!isSearching) {
+      filteredSongs = [...playlists[currentPlaylistIndex].songs];
+      playlistHeading.textContent = `${playlists[currentPlaylistIndex].icon} ${playlists[currentPlaylistIndex].name}`;
+    } else {
+      // search across every playlist, not just the active tab
+      filteredSongs = playlists.flatMap((pl) => pl.songs).filter(
+        (s) => s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q)
+      );
+      playlistHeading.textContent = `Kết quả tìm kiếm cho "${searchInput.value.trim()}"`;
+    }
+    renderPlaylist();
+  }
+
+  function renderPlaylist() {
+    playlistEl.innerHTML = "";
+    emptyState.classList.toggle("hidden", filteredSongs.length > 0);
+
+    filteredSongs.forEach((song) => {
+      const isCurrent = song.playlistIndex === playingPlaylistIndex && song.songIndex === currentSongIndex;
+      const row = document.createElement("div");
+      row.className = `song-row fade-in flex items-center gap-3 px-3 py-2.5 rounded-2xl cursor-pointer transition hover:bg-white/40 ${isCurrent ? "active" : ""}`;
+
+      row.innerHTML = `
+        <div class="relative flex-shrink-0">
+          <img src="${song.cover}" alt="${song.title}" class="w-12 h-12 rounded-lg object-cover shadow-sm" />
+          ${isCurrent && isPlaying ? `
+            <div class="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center">
+              <div class="flex items-end gap-0.5 h-3.5">
+                <span class="w-0.5 bg-white animate-pulse" style="height:60%"></span>
+                <span class="w-0.5 bg-white animate-pulse" style="height:100%; animation-delay:150ms"></span>
+                <span class="w-0.5 bg-white animate-pulse" style="height:40%; animation-delay:300ms"></span>
+              </div>
+            </div>` : ""}
+        </div>
+        <div class="min-w-0 flex-1">
+          <p class="font-medium text-gray-900 truncate text-sm md:text-base">${song.title}</p>
+          <p class="text-xs md:text-sm text-gray-500 truncate">${song.artist}</p>
+        </div>
+        ${isSearching ? `<span class="hidden sm:inline-flex flex-shrink-0 items-center gap-1 text-[11px] font-medium text-gray-500 bg-black/5 px-2 py-1 rounded-full">${playlists[song.playlistIndex].icon} ${playlists[song.playlistIndex].name}</span>` : ""}
+        <span class="text-xs font-medium text-gray-400 tabular-nums flex-shrink-0" data-duration-for="${song.playlistIndex}-${song.songIndex}">
+          ${song.duration ? formatTime(song.duration) : "--:--"}
+        </span>
+        <button title="Tải về" class="row-download-btn flex-shrink-0 p-1.5 rounded-full text-gray-500 hover:text-gray-900 hover:bg-black/5 transition">
+          <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+          </svg>
+        </button>
+      `;
+
+      row.addEventListener("click", () => {
+        currentPlaylistIndex = song.playlistIndex;
+        loadSong(song.playlistIndex, song.songIndex, true);
+      });
+
+      row.querySelector(".row-download-btn").addEventListener("click", (e) => {
+        e.stopPropagation();
+        downloadSong(song);
+      });
+
+      playlistEl.appendChild(row);
+    });
+  }
+
+  function updateDurationBadge(playlistIndex, songIndex) {
+    const song = playlists[playlistIndex].songs[songIndex];
+    const el = playlistEl.querySelector(`[data-duration-for="${playlistIndex}-${songIndex}"]`);
+    if (el) el.textContent = formatTime(song.duration);
+  }
+
+  // preload durations for the list display
+  playlists.forEach((pl) => {
+    pl.songs.forEach((song) => {
+      const probe = new Audio();
+      probe.preload = "metadata";
+      probe.src = song.src;
+      probe.addEventListener("loadedmetadata", () => {
+        song.duration = probe.duration;
+        updateDurationBadge(song.playlistIndex, song.songIndex);
+      });
+    });
+  });
+
+  // ---- Player logic ----
+  function loadSong(playlistIndex, songIndex, autoplay) {
+    playingPlaylistIndex = playlistIndex;
+    currentSongIndex = songIndex;
+    const song = playlists[playlistIndex].songs[songIndex];
+
+    audio.src = song.src;
+    playerCover.src = song.cover;
+    playerTitle.textContent = song.title;
+    playerArtist.textContent = song.artist;
+
+    crossfadeBackground(song.gradient);
+    renderTabs();
+    renderPlaylist();
+
+    if (autoplay) {
+      audio.play().then(() => { isPlaying = true; updatePlayIcon(); renderPlaylist(); }).catch(() => {});
+    }
+  }
+
+  function updatePlayIcon() {
+    playIcon.classList.toggle("hidden", isPlaying);
+    pauseIcon.classList.toggle("hidden", !isPlaying);
+  }
+
+  function togglePlay() {
+    if (!audio.src) { loadSong(0, 0, true); return; }
+    if (isPlaying) {
+      audio.pause();
+      isPlaying = false;
+    } else {
+      audio.play().catch(() => {});
+      isPlaying = true;
+    }
+    updatePlayIcon();
+    renderPlaylist();
+  }
+
+  function nextSong() {
+    const songs = playlists[playingPlaylistIndex].songs;
+    const nextIndex = (currentSongIndex + 1) % songs.length;
+    loadSong(playingPlaylistIndex, nextIndex, isPlaying);
+  }
+
+  function prevSong() {
+    if (audio.currentTime > 3) {
+      audio.currentTime = 0;
+      return;
+    }
+    const songs = playlists[playingPlaylistIndex].songs;
+    const prevIndex = (currentSongIndex - 1 + songs.length) % songs.length;
+    loadSong(playingPlaylistIndex, prevIndex, isPlaying);
+  }
+
+  function cycleRepeat() {
+    repeatMode = repeatMode === "none" ? "all" : repeatMode === "all" ? "one" : "none";
+    repeatBtn.classList.toggle("text-pink-500", repeatMode !== "none");
+    repeatOneBadge.classList.toggle("hidden", repeatMode !== "one");
+    repeatOneBadge.classList.toggle("flex", repeatMode === "one");
+  }
+
+  async function downloadSong(song) {
+    const filename = `${song.title} - ${song.artist}.mp3`;
+    try {
+      // same-origin (local) files can be downloaded as a blob with the real filename
+      const response = await fetch(song.src);
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    } catch (err) {
+      // cross-origin sources (e.g. SoundHelix) block blob fetch, fall back to a direct link
+      const link = document.createElement("a");
+      link.href = song.src;
+      link.download = filename;
+      link.target = "_blank";
+      link.rel = "noopener";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    }
+  }
+
+  function downloadCurrentSong() {
+    const song = playlists[playingPlaylistIndex].songs[currentSongIndex];
+    if (song) downloadSong(song);
+  }
+
+  // ---- Progress bar ----
+  audio.addEventListener("timeupdate", () => {
+    if (!audio.duration) return;
+    const pct = (audio.currentTime / audio.duration) * 100;
+    progressFill.style.width = `${pct}%`;
+    progressThumb.style.left = `${pct}%`;
+    currentTimeEl.textContent = formatTime(audio.currentTime);
+  });
+
+  audio.addEventListener("loadedmetadata", () => {
+    durationTimeEl.textContent = formatTime(audio.duration);
+  });
+
+  audio.addEventListener("ended", () => {
+    const songs = playlists[playingPlaylistIndex].songs;
+    if (repeatMode === "one") {
+      audio.currentTime = 0;
+      audio.play();
+    } else if (repeatMode === "all" || currentSongIndex < songs.length - 1) {
+      nextSong();
+    } else {
+      isPlaying = false;
+      updatePlayIcon();
+      renderPlaylist();
+    }
+  });
+
+  progressTrack.addEventListener("click", (e) => {
+    if (!audio.duration) return;
+    const rect = progressTrack.getBoundingClientRect();
+    const pct = (e.clientX - rect.left) / rect.width;
+    audio.currentTime = pct * audio.duration;
+  });
+
+  // ---- Volume ----
+  volumeSlider.addEventListener("input", (e) => {
+    audio.volume = parseFloat(e.target.value);
+  });
+  audio.volume = parseFloat(volumeSlider.value);
+
+  // ---- Search filter ----
+  searchInput.addEventListener("input", applyFilter);
+
+  // ---- Button events ----
+  playBtn.addEventListener("click", togglePlay);
+  nextBtn.addEventListener("click", () => nextSong());
+  prevBtn.addEventListener("click", () => prevSong());
+  repeatBtn.addEventListener("click", cycleRepeat);
+  downloadBtn.addEventListener("click", downloadCurrentSong);
+
+  // ---- Init ----
+  const firstSong = playlists[0].songs[0];
+  bgLayerA.style.background = gradientCss(firstSong.gradient);
+  renderTabs();
+  applyFilter();
+  playerCover.src = firstSong.cover;
+  playerTitle.textContent = firstSong.title;
+  playerArtist.textContent = firstSong.artist;
+  audio.src = firstSong.src;
+</script>
+</body>
+</html>
+
