@@ -479,6 +479,15 @@
 
   async function downloadSong(song) {
     const filename = `${song.title} - ${song.artist}.mp3`;
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+    // mobile browsers (esp. iOS Safari) largely ignore the `download` attribute on blob URLs,
+    // so just open the file directly and let the OS media UI offer its own save/share option
+    if (isMobile) {
+      window.open(song.src, "_blank", "noopener");
+      return;
+    }
+
     try {
       // same-origin (or CORS-enabled) files can be downloaded as a blob with the real filename
       const response = await fetch(song.src);
