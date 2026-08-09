@@ -3,8 +3,9 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Music • Apple Music Style Player</title>
+<title>Tỉnh Thức Chuyển Hóa • Music Player</title>
 <script src="https://cdn.tailwindcss.com"></script>
+<script>tailwind.config = { darkMode: 'class' };</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -14,6 +15,8 @@
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: rgba(0,0,0,0.15); border-radius: 999px; }
   ::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
+  .dark ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); }
+  .dark ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.25); }
 
   .bg-layer {
     position: fixed;
@@ -51,6 +54,10 @@
     background: rgba(255,255,255,0.55);
     box-shadow: 0 4px 14px rgba(0,0,0,0.08);
   }
+  .dark .song-row.active {
+    background: rgba(255,255,255,0.1);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  }
 
   .spin-slow {
     animation: spin 6s linear infinite;
@@ -69,19 +76,29 @@
   }
 </style>
 </head>
-<body class="min-h-screen text-gray-800 transition-colors duration-700">
+<body class="min-h-screen text-gray-800 dark:text-gray-100 transition-colors duration-700">
 
   <!-- Crossfade gradient background layers -->
   <div id="bgLayerA" class="bg-layer" style="opacity:1;"></div>
   <div id="bgLayerB" class="bg-layer" style="opacity:0;"></div>
-  <div class="fixed inset-0 -z-[9] bg-white/40"></div>
+  <div class="fixed inset-0 -z-[9] bg-white/40 dark:bg-black/60 transition-colors duration-700"></div>
 
   <!-- Header: floating search bar -->
   <header class="sticky top-0 z-20 px-4 pt-5 pb-3 md:px-8">
     <div class="max-w-3xl mx-auto">
       <div class="flex items-center justify-between mb-4">
-        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900">🎵 Music</h1>
-        <span class="text-xs font-medium text-gray-500 bg-white/50 backdrop-blur-md px-3 py-1 rounded-full border border-white/60">Apple Music Style</span>
+        <h1 class="text-2xl md:text-3xl font-extrabold tracking-tight text-gray-900 dark:text-gray-100">🌅 Tỉnh Thức Chuyển Hóa</h1>
+        <div class="flex items-center gap-2">
+          <span class="text-xs font-medium text-gray-500 dark:text-gray-400 bg-white/50 dark:bg-white/10 backdrop-blur-md px-3 py-1 rounded-full border border-white/60 dark:border-white/10">Giao diện</span>
+          <button id="themeToggleBtn" title="Chuyển sáng/tối" class="p-2 rounded-full bg-white/50 dark:bg-white/10 backdrop-blur-md border border-white/60 dark:border-white/10 text-gray-600 dark:text-gray-300 hover:bg-white/70 dark:hover:bg-white/20 transition">
+            <svg id="themeIconSun" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.36 6.36l-.7-.7M6.34 6.34l-.7-.7m12.02 0l-.7.7M6.34 17.66l-.7.7M12 7a5 5 0 100 10 5 5 0 000-10z" />
+            </svg>
+            <svg id="themeIconMoon" class="w-4 h-4 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+            </svg>
+          </button>
+        </div>
       </div>
       <div class="relative">
         <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -91,7 +108,7 @@
           id="searchInput"
           type="text"
           placeholder="Tìm bài hát hoặc ca sĩ..."
-          class="w-full pl-11 pr-4 py-3 rounded-2xl bg-white/50 backdrop-blur-xl border border-white/60 shadow-lg shadow-black/5 focus:outline-none focus:ring-2 focus:ring-pink-400/60 placeholder-gray-500 text-gray-800 transition"
+          class="w-full pl-11 pr-4 py-3 rounded-2xl bg-white/50 dark:bg-white/10 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-lg shadow-black/5 focus:outline-none focus:ring-2 focus:ring-pink-400/60 placeholder-gray-500 dark:placeholder-gray-400 text-gray-800 dark:text-gray-100 transition"
         />
       </div>
 
@@ -102,23 +119,23 @@
 
   <!-- Playlist -->
   <main class="max-w-3xl mx-auto px-4 md:px-8 pb-40 pt-2">
-    <h2 id="playlistHeading" class="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3 px-1">Danh sách phát</h2>
+    <h2 id="playlistHeading" class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 px-1">Danh sách phát</h2>
     <div id="playlist" class="flex flex-col gap-1.5"></div>
-    <p id="emptyState" class="hidden text-center text-gray-400 py-10">Không tìm thấy bài hát nào phù hợp.</p>
+    <p id="emptyState" class="hidden text-center text-gray-400 dark:text-gray-500 py-10">Không tìm thấy bài hát nào phù hợp.</p>
   </main>
 
   <!-- Player bar (fixed bottom) -->
   <footer class="fixed bottom-0 left-0 right-0 z-30 px-3 pb-3 md:px-6 md:pb-5">
-    <div class="max-w-4xl mx-auto bg-white/60 backdrop-blur-2xl border border-white/70 rounded-3xl shadow-2xl shadow-black/10 px-4 py-3 md:px-6 md:py-4">
+    <div class="max-w-3xl mx-auto bg-white/60 dark:bg-white/10 backdrop-blur-2xl border border-white/70 dark:border-white/10 rounded-3xl shadow-2xl shadow-black/10 px-4 py-3 md:px-6 md:py-4">
 
       <!-- Progress bar -->
       <div class="flex items-center gap-3 mb-2">
-        <span id="currentTime" class="text-xs font-medium text-gray-500 w-10 text-right tabular-nums">00:00</span>
-        <div id="progressTrack" class="relative flex-1 h-1.5 bg-black/10 rounded-full group">
-          <div id="progressFill" class="absolute top-0 left-0 h-full bg-gray-800 rounded-full" style="width:0%"></div>
-          <div id="progressThumb" class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-gray-900 rounded-full opacity-0 group-hover:opacity-100 transition" style="left:0%"></div>
+        <span id="currentTime" class="text-xs font-medium text-gray-500 dark:text-gray-400 w-10 text-right tabular-nums">00:00</span>
+        <div id="progressTrack" class="relative flex-1 h-1.5 bg-black/10 dark:bg-white/10 rounded-full group">
+          <div id="progressFill" class="absolute top-0 left-0 h-full bg-gray-800 dark:bg-gray-200 rounded-full" style="width:0%"></div>
+          <div id="progressThumb" class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-3 h-3 bg-gray-900 dark:bg-white rounded-full opacity-0 group-hover:opacity-100 transition" style="left:0%"></div>
         </div>
-        <span id="durationTime" class="text-xs font-medium text-gray-500 w-10 tabular-nums">00:00</span>
+        <span id="durationTime" class="text-xs font-medium text-gray-500 dark:text-gray-400 w-10 tabular-nums">00:00</span>
       </div>
 
       <div class="flex items-center justify-between gap-3">
@@ -126,21 +143,21 @@
         <div class="flex items-center gap-3 min-w-0 flex-1">
           <img id="playerCover" src="" alt="cover" class="w-12 h-12 md:w-14 md:h-14 rounded-xl object-cover shadow-md flex-shrink-0" />
           <div class="min-w-0">
-            <p id="playerTitle" class="font-semibold text-gray-900 truncate text-sm md:text-base">Chọn một bài hát</p>
-            <p id="playerArtist" class="text-xs md:text-sm text-gray-500 truncate">—</p>
+            <p id="playerTitle" class="font-semibold text-gray-900 dark:text-gray-100 truncate text-sm md:text-base">Chọn một bài hát</p>
+            <p id="playerArtist" class="text-xs md:text-sm text-gray-500 dark:text-gray-400 truncate">—</p>
           </div>
         </div>
 
         <!-- Controls -->
         <div class="flex items-center gap-1 md:gap-3">
-          <button id="repeatBtn" title="Lặp lại" class="relative p-2 rounded-full text-gray-500 hover:text-gray-900 hover:bg-black/5 transition">
+          <button id="repeatBtn" title="Lặp lại" class="relative p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-black/5 dark:hover:bg-white/10 transition">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 2l4 4-4 4M3 12v-2a4 4 0 014-4h14M7 22l-4-4 4-4M21 12v2a4 4 0 01-4 4H3" />
             </svg>
             <span id="repeatOneBadge" class="hidden absolute -top-0.5 -right-0.5 text-[9px] font-bold bg-pink-500 text-white rounded-full w-3.5 h-3.5 items-center justify-center">1</span>
           </button>
 
-          <button id="prevBtn" title="Bài trước" class="p-2 rounded-full text-gray-700 hover:bg-black/5 transition">
+          <button id="prevBtn" title="Bài trước" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition">
             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
           </button>
 
@@ -149,18 +166,18 @@
             <svg id="pauseIcon" class="w-5 h-5 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
           </button>
 
-          <button id="nextBtn" title="Bài kế" class="p-2 rounded-full text-gray-700 hover:bg-black/5 transition">
+          <button id="nextBtn" title="Bài kế" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition">
             <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg>
           </button>
 
           <div class="hidden md:flex items-center gap-2 ml-2">
-            <svg class="w-4 h-4 text-gray-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <svg class="w-4 h-4 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM19 12a4 4 0 00-2-3.46M22 12a7 7 0 00-3-5.75" />
             </svg>
             <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.8" class="w-20" />
           </div>
 
-          <button id="downloadBtn" title="Tải về" class="p-2 rounded-full text-gray-700 hover:bg-black/5 transition">
+          <button id="downloadBtn" title="Tải về" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition">
             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
             </svg>
@@ -283,6 +300,9 @@
 
   const bgLayerA = document.getElementById("bgLayerA");
   const bgLayerB = document.getElementById("bgLayerB");
+  const themeToggleBtn = document.getElementById("themeToggleBtn");
+  const themeIconSun = document.getElementById("themeIconSun");
+  const themeIconMoon = document.getElementById("themeIconMoon");
 
   // ---- Helpers ----
   function formatTime(seconds) {
@@ -293,7 +313,7 @@
   }
 
   function gradientCss([c1, c2]) {
-    return `radial-gradient(circle at 30% 20%, ${c1}, ${c2})`;
+    return `radial-gradient(circle at center, ${c1}, ${c2})`;
   }
 
   function crossfadeBackground(gradient) {
@@ -313,8 +333,8 @@
       const isActive = idx === currentPlaylistIndex;
       tab.className = `flex-shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium border transition ${
         isActive
-          ? "bg-gray-900 text-white border-gray-900 shadow-md"
-          : "bg-white/50 text-gray-600 border-white/60 hover:bg-white/70"
+          ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white shadow-md"
+          : "bg-white/50 dark:bg-white/10 text-gray-600 dark:text-gray-300 border-white/60 dark:border-white/10 hover:bg-white/70 dark:hover:bg-white/20"
       }`;
       tab.innerHTML = `<span>${pl.icon}</span><span>${pl.name}</span>${idx === playingPlaylistIndex ? '<span class="w-1.5 h-1.5 rounded-full bg-pink-400"></span>' : ""}`;
       tab.addEventListener("click", () => {
@@ -354,7 +374,7 @@
     filteredSongs.forEach((song) => {
       const isCurrent = song.playlistIndex === playingPlaylistIndex && song.songIndex === currentSongIndex;
       const row = document.createElement("div");
-      row.className = `song-row fade-in flex items-center gap-3 px-3 py-2.5 rounded-2xl cursor-pointer transition hover:bg-white/40 ${isCurrent ? "active" : ""}`;
+      row.className = `song-row fade-in flex items-center gap-3 px-3 py-2.5 rounded-2xl cursor-pointer transition hover:bg-white/40 dark:hover:bg-white/10 ${isCurrent ? "active" : ""}`;
 
       row.innerHTML = `
         <div class="relative flex-shrink-0">
@@ -369,14 +389,14 @@
             </div>` : ""}
         </div>
         <div class="min-w-0 flex-1">
-          <p class="font-medium text-gray-900 truncate text-sm md:text-base">${song.title}</p>
-          <p class="text-xs md:text-sm text-gray-500 truncate">${song.artist}</p>
+          <p class="font-medium text-gray-900 dark:text-gray-100 truncate text-sm md:text-base">${song.title}</p>
+          <p class="text-xs md:text-sm text-gray-500 dark:text-gray-400 truncate">${song.artist}</p>
         </div>
-        ${isSearching ? `<span class="hidden sm:inline-flex flex-shrink-0 items-center gap-1 text-[11px] font-medium text-gray-500 bg-black/5 px-2 py-1 rounded-full">${playlists[song.playlistIndex].icon} ${playlists[song.playlistIndex].name}</span>` : ""}
-        <span class="text-xs font-medium text-gray-400 tabular-nums flex-shrink-0" data-duration-for="${song.playlistIndex}-${song.songIndex}">
+        ${isSearching ? `<span class="hidden sm:inline-flex flex-shrink-0 items-center gap-1 text-[11px] font-medium text-gray-500 dark:text-gray-400 bg-black/5 dark:bg-white/10 px-2 py-1 rounded-full">${playlists[song.playlistIndex].icon} ${playlists[song.playlistIndex].name}</span>` : ""}
+        <span class="text-xs font-medium text-gray-400 dark:text-gray-500 tabular-nums flex-shrink-0" data-duration-for="${song.playlistIndex}-${song.songIndex}">
           ${song.duration ? formatTime(song.duration) : "--:--"}
         </span>
-        <button title="Tải về" class="row-download-btn flex-shrink-0 p-1.5 rounded-full text-gray-500 hover:text-gray-900 hover:bg-black/5 transition">
+        <button title="Tải về" class="row-download-btn flex-shrink-0 p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-black/5 dark:hover:bg-white/10 transition">
           <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
           </svg>
@@ -570,7 +590,26 @@
   repeatBtn.addEventListener("click", cycleRepeat);
   downloadBtn.addEventListener("click", downloadCurrentSong);
 
+  // ---- Theme (light/dark) ----
+  function applyTheme(isDark) {
+    document.documentElement.classList.toggle("dark", isDark);
+    themeIconSun.classList.toggle("hidden", isDark);
+    themeIconMoon.classList.toggle("hidden", !isDark);
+    localStorage.setItem("theme", isDark ? "dark" : "light");
+  }
+
+  function initTheme() {
+    const saved = localStorage.getItem("theme");
+    const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    applyTheme(saved ? saved === "dark" : prefersDark);
+  }
+
+  themeToggleBtn.addEventListener("click", () => {
+    applyTheme(!document.documentElement.classList.contains("dark"));
+  });
+
   // ---- Init ----
+  initTheme();
   const firstSong = playlists[0].songs[0];
   bgLayerA.style.background = gradientCss(firstSong.gradient);
   renderTabs();
