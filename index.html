@@ -118,7 +118,7 @@
 
   <!-- Playlist -->
   <main class="max-w-3xl mx-auto px-4 md:px-8 pb-40 pt-2">
-    <h2 id="playlistHeading" class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 px-1">Danh sách phát</h2>
+    <h2 id="playlistHeading" class="hidden text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 px-1">Danh sách phát</h2>
     <div id="playlist" class="flex flex-col gap-1.5"></div>
     <p id="emptyState" class="hidden text-center text-gray-400 dark:text-gray-500 py-10">Không tìm thấy bài hát nào phù hợp.</p>
   </main>
@@ -291,10 +291,17 @@
 
   function parseSongMeta(file) {
     const m = file.match(/^🎵\s*(.+?)\s*\((.+)\)\s*•\s*(.+?)\s*\(TTCH\s*-\s*Số\s*(\d+)\)\.mp3$/u);
-    if (!m) return { title: file.replace(/\.mp3$/i, "").replace(/^🎵\s*/, ""), artist: "TTCH" };
+    if (!m) return { title: file.replace(/\.mp3$/i, "").replace(/^🎵\s*/, ""), artist: "TTCH", composer: "" };
+    // the composer/origin note is the last " - " segment inside the first parenthesis, e.g. "... - Nhạc ngoại";
+    // everything before that is the original song name this TTCH version is set to
+    const subtitleParts = m[2].split(" - ");
+    const composer = subtitleParts[subtitleParts.length - 1].replace(/\s+/g, " ").trim();
+    const originalTitle = subtitleParts.slice(0, -1).join(" - ").replace(/\s+/g, " ").trim();
+    const shortTitle = m[1].replace(/\s+/g, " ").trim();
     return {
-      title: m[1].replace(/\s+/g, " ").trim(),
+      title: originalTitle ? `${shortTitle} (${originalTitle})` : shortTitle,
       artist: m[3].replace(/\s+/g, " ").trim(),
+      composer,
     };
   }
 
@@ -306,6 +313,7 @@
       tags: entry.tags,
       title: meta.title,
       artist: meta.artist,
+      composer: meta.composer,
       src: R2_BASE + encodeURIComponent(entry.file),
       gradient: GRADIENTS[idx % GRADIENTS.length],
       duration: null,
@@ -316,6 +324,15 @@
   });
 
   const allTags = [ALL_TAG, ...Array.from(new Set(allSongs.flatMap((s) => s.tags))).sort((a, b) => a.localeCompare(b, "vi"))];
+
+  const TAG_ICONS = {
+    [ALL_TAG]: "🎵",
+    "Bình Yên": "🧘",
+    "Cổ Điển": "🎻",
+    "Nhạc Trẻ": "🎧",
+    "Tích Cực": "💪",
+    "Trữ Tình": "💗",
+  };
 
   // ---- State ----
   let currentTag = ALL_TAG;
@@ -390,7 +407,7 @@
     return "data:image/svg+xml;utf8," + encodeURIComponent(svg);
   }
 
-  // ---- Embedded ID3v2 cover art extraction (reads only the tag header, no full download) ----
+  // ---- Embedded ID3 cover art extraction (reads only the tag header, no full download) ----
   async function extractCoverFromMp3(url) {
     try {
       const headRes = await fetch(url, { headers: { Range: "bytes=0-9" } });
@@ -399,7 +416,10 @@
       const headView = new DataView(headBuf);
       if (String.fromCharCode(headView.getUint8(0), headView.getUint8(1), headView.getUint8(2)) !== "ID3") return null;
       const majorVersion = headView.getUint8(3);
+      const flags = headView.getUint8(5);
+      const hasExtendedHeader = majorVersion >= 3 && (flags & 0x40) !== 0;
       const synchsafe = (b0, b1, b2, b3) => (b0 << 21) | (b1 << 14) | (b2 << 7) | b3;
+      const beInt = (b0, b1, b2, b3) => (b0 * 0x1000000) + (b1 << 16) + (b2 << 8) + b3;
       const tagSize = synchsafe(headView.getUint8(6), headView.getUint8(7), headView.getUint8(8), headView.getUint8(9));
       const totalTagBytes = 10 + tagSize;
 
@@ -408,21 +428,47 @@
       const view = new DataView(buf);
 
       let offset = 10;
-      while (offset + 10 <= buf.byteLength && offset < totalTagBytes) {
-        const frameId = String.fromCharCode(view.getUint8(offset), view.getUint8(offset + 1), view.getUint8(offset + 2), view.getUint8(offset + 3));
-        if (!frameId.trim() || frameId.charCodeAt(0) === 0) break;
-        const frameSize = majorVersion >= 4
-          ? synchsafe(view.getUint8(offset + 4), view.getUint8(offset + 5), view.getUint8(offset + 6), view.getUint8(offset + 7))
-          : (view.getUint8(offset + 4) * 0x1000000) + (view.getUint8(offset + 5) << 16) + (view.getUint8(offset + 6) << 8) + view.getUint8(offset + 7);
-        const frameStart = offset + 10;
+      if (hasExtendedHeader && offset + 4 <= buf.byteLength) {
+        const extSize = majorVersion >= 4
+          ? synchsafe(view.getUint8(offset), view.getUint8(offset + 1), view.getUint8(offset + 2), view.getUint8(offset + 3))
+          : beInt(view.getUint8(offset), view.getUint8(offset + 1), view.getUint8(offset + 2), view.getUint8(offset + 3));
+        offset += majorVersion >= 4 ? extSize : extSize + 4;
+      }
 
-        if (frameId === "APIC" && frameStart + frameSize <= buf.byteLength) {
+      // ID3v2.2 uses 3-char frame IDs ("PIC") with 3-byte sizes instead of the v2.3/2.4 4+4 layout
+      const isV2 = majorVersion === 2;
+      const frameHeaderSize = isV2 ? 6 : 10;
+      const pictureFrameId = isV2 ? "PIC" : "APIC";
+
+      while (offset + frameHeaderSize <= buf.byteLength && offset < totalTagBytes) {
+        const frameId = isV2
+          ? String.fromCharCode(view.getUint8(offset), view.getUint8(offset + 1), view.getUint8(offset + 2))
+          : String.fromCharCode(view.getUint8(offset), view.getUint8(offset + 1), view.getUint8(offset + 2), view.getUint8(offset + 3));
+        if (!frameId.trim() || frameId.charCodeAt(0) === 0) break;
+        let frameSize;
+        if (isV2) {
+          frameSize = beInt(0, view.getUint8(offset + 3), view.getUint8(offset + 4), view.getUint8(offset + 5));
+        } else if (majorVersion >= 4) {
+          frameSize = synchsafe(view.getUint8(offset + 4), view.getUint8(offset + 5), view.getUint8(offset + 6), view.getUint8(offset + 7));
+        } else {
+          frameSize = beInt(view.getUint8(offset + 4), view.getUint8(offset + 5), view.getUint8(offset + 6), view.getUint8(offset + 7));
+        }
+        const frameStart = offset + frameHeaderSize;
+
+        if (frameId === pictureFrameId && frameStart + frameSize <= buf.byteLength) {
           let p = frameStart;
           const enc = view.getUint8(p); p += 1;
-          let mimeEnd = p;
-          while (mimeEnd < buf.byteLength && view.getUint8(mimeEnd) !== 0) mimeEnd++;
-          const mimeType = new TextDecoder("iso-8859-1").decode(buf.slice(p, mimeEnd)) || "image/jpeg";
-          p = mimeEnd + 1;
+          let mimeType = "image/jpeg";
+          if (isV2) {
+            const fmt = String.fromCharCode(view.getUint8(p), view.getUint8(p + 1), view.getUint8(p + 2)).toUpperCase();
+            mimeType = fmt === "PNG" ? "image/png" : "image/jpeg";
+            p += 3;
+          } else {
+            let mimeEnd = p;
+            while (mimeEnd < buf.byteLength && view.getUint8(mimeEnd) !== 0) mimeEnd++;
+            mimeType = new TextDecoder("iso-8859-1").decode(buf.slice(p, mimeEnd)) || "image/jpeg";
+            p = mimeEnd + 1;
+          }
           p += 1; // picture type byte
           if (enc === 1 || enc === 2) {
             while (p + 1 < buf.byteLength && !(view.getUint8(p) === 0 && view.getUint8(p + 1) === 0)) p += 2;
@@ -478,7 +524,7 @@
           ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white shadow-md"
           : "bg-white/50 dark:bg-white/10 text-gray-600 dark:text-gray-300 border-white/60 dark:border-white/10 hover:bg-white/70 dark:hover:bg-white/20"
       }`;
-      tab.textContent = tag;
+      tab.innerHTML = `<span>${TAG_ICONS[tag] || "🏷️"}</span><span>${tag}</span>`;
       tab.addEventListener("click", () => {
         currentTag = tag;
         searchInput.value = "";
@@ -498,12 +544,13 @@
       // search across every tag, not just the active one
       filteredSongs = allSongs.filter((s) => s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q));
       playlistHeading.textContent = `Kết quả tìm kiếm cho "${searchInput.value.trim()}"`;
+      playlistHeading.classList.remove("hidden");
     } else if (currentTag === ALL_TAG) {
       filteredSongs = allSongs.slice();
-      playlistHeading.textContent = `🎵 ${ALL_TAG}`;
+      playlistHeading.classList.add("hidden");
     } else {
       filteredSongs = allSongs.filter((s) => s.tags.includes(currentTag));
-      playlistHeading.textContent = `🏷️ ${currentTag}`;
+      playlistHeading.classList.add("hidden");
     }
     renderPlaylist();
   }
@@ -532,10 +579,15 @@
         <div class="min-w-0 flex-1">
           <p class="font-medium text-gray-900 dark:text-gray-100 line-clamp-2 text-base md:text-lg" title="${song.title}">${song.title}</p>
           <p class="text-sm md:text-base text-gray-500 dark:text-gray-400 truncate">${song.artist}</p>
+          ${song.composer ? `<p class="md:hidden text-xs text-gray-500 dark:text-gray-400 truncate">Tác giả: ${song.composer}</p>` : ""}
           <div class="flex flex-wrap gap-1 mt-1">
             ${song.tags.map((t) => `<span class="text-[10px] font-medium text-gray-500 dark:text-gray-400 bg-black/5 dark:bg-white/10 px-2 py-0.5 rounded-full">${t}</span>`).join("")}
           </div>
         </div>
+        ${song.composer ? `<div class="hidden md:block w-28 lg:w-36 flex-shrink-0">
+          <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Tác giả</p>
+          <p class="text-sm text-gray-500 dark:text-gray-400 truncate">${song.composer}</p>
+        </div>` : ""}
         <span class="text-sm font-medium text-gray-500 dark:text-gray-400 tabular-nums flex-shrink-0" data-duration-for="${song.id}">
           ${song.duration ? formatTime(song.duration) : "--:--"}
         </span>
