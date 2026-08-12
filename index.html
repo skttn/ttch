@@ -189,7 +189,7 @@
           id="searchInput"
           type="text"
           placeholder="Tìm kiếm nội dung..."
-          class="w-full pl-11 pr-4 py-3 rounded-2xl bg-white/50 dark:bg-white/10 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-lg shadow-black/5 focus:outline-none focus:ring-2 focus:ring-pink-400/60 placeholder-gray-500 dark:placeholder-gray-400 text-gray-800 dark:text-gray-100 transition"
+          class="w-full pl-11 pr-4 py-3 rounded-2xl bg-white/50 dark:bg-white/10 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-lg shadow-black/5 focus:outline-none focus:ring-2 focus:ring-gray-400/60 placeholder-gray-500 dark:placeholder-gray-400 text-gray-800 dark:text-gray-100 transition"
         />
       </div>
 
@@ -222,25 +222,25 @@
       <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
         <!-- Sleep timer (left) -->
         <div class="flex items-center justify-self-start">
-          <button id="sleepTimerBtn" title="Hẹn giờ tắt nhạc" class="relative p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-black/5 dark:hover:bg-white/10 transition">
-            <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <button id="sleepTimerBtn" title="Hẹn giờ tắt nhạc" class="relative p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:scale-105 active:scale-95 transition flex flex-col items-center justify-center">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <circle cx="12" cy="13" r="8" stroke-linecap="round" stroke-linejoin="round" />
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4l3 2M9 2h6" />
             </svg>
-            <span id="sleepTimerLabel" class="hidden ml-1 text-xs font-semibold text-pink-500 tabular-nums"></span>
+            <span id="sleepTimerLabel" class="hidden text-[11px] font-semibold text-gray-900 dark:text-gray-100 tabular-nums whitespace-nowrap leading-none mt-1"></span>
           </button>
         </div>
 
         <!-- Playback controls (always centered) -->
         <div class="flex items-center gap-1 md:gap-3">
-          <button id="repeatBtn" title="Lặp lại" class="relative p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-black/5 dark:hover:bg-white/10 transition">
+          <button id="repeatBtn" title="Lặp lại" class="relative p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:scale-105 active:scale-95 transition">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 2l4 4-4 4M3 12v-2a4 4 0 014-4h14M7 22l-4-4 4-4M21 12v2a4 4 0 01-4 4H3" />
             </svg>
             <span id="repeatOneBadge" class="hidden absolute inset-0 items-center justify-center text-[11px] font-bold" style="transform: translateY(1px);">1</span>
           </button>
 
-          <button id="prevBtn" title="Bài trước" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition">
+          <button id="prevBtn" title="Bài trước" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:scale-105 active:scale-95 transition">
             <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
           </button>
 
@@ -249,11 +249,11 @@
             <svg id="pauseIcon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
           </button>
 
-          <button id="nextBtn" title="Bài kế" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition">
+          <button id="nextBtn" title="Bài kế" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:scale-105 active:scale-95 transition">
             <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg>
           </button>
 
-          <button id="orderBtn" title="Thứ tự phát" class="relative p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-black/5 dark:hover:bg-white/10 transition">
+          <button id="orderBtn" title="Thứ tự phát" class="relative p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:scale-105 active:scale-95 transition">
             <svg id="orderIconSequential" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M2 8h16M14 3l5 5-5 5" />
               <path d="M2 16h16M14 11l5 5-5 5" />
@@ -270,13 +270,18 @@
         <!-- Volume + download (right) -->
         <div class="flex items-center gap-1 md:gap-3 justify-self-end">
           <div class="hidden md:flex items-center gap-2">
-            <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM19 12a4 4 0 00-2-3.46M22 12a7 7 0 00-3-5.75" />
-            </svg>
+            <button id="muteBtn" title="Tắt/Bật tiếng" class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:scale-105 active:scale-95 transition">
+              <svg id="volumeIconOn" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM19 12a4 4 0 00-2-3.46M22 12a7 7 0 00-3-5.75" />
+              </svg>
+              <svg id="volumeIconOff" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6" />
+              </svg>
+            </button>
             <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.8" class="w-20" />
           </div>
 
-          <button id="downloadBtn" title="Tải về" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition">
+          <button id="downloadBtn" title="Tải về" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:scale-105 active:scale-95 transition">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
             </svg>
@@ -336,7 +341,7 @@
         <button id="sleepTimerCustomSongsBtn" class="sleep-timer-option py-2.5 rounded-xl text-sm font-medium bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-gray-800 dark:text-gray-100 transition">Tùy chọn</button>
       </div>
 
-      <button id="sleepTimerCancelBtn" class="hidden w-full py-2.5 rounded-xl text-sm font-semibold text-pink-500 bg-pink-500/10 hover:bg-pink-500/20 transition">Tắt hẹn giờ</button>
+      <button id="sleepTimerCancelBtn" class="hidden w-full py-2.5 rounded-xl text-sm font-semibold text-gray-900 dark:text-gray-100 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition">Tắt hẹn giờ</button>
     </div>
   </div>
 
@@ -344,7 +349,7 @@
   <div id="sleepTimerCustomOverlay" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
     <div class="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-xs w-full p-5">
       <p id="sleepTimerCustomLabel" class="font-semibold text-gray-900 dark:text-gray-100 mb-3">Nhập số phút</p>
-      <input id="sleepTimerCustomInput" type="number" min="1" class="w-full px-3 py-2.5 rounded-xl bg-black/5 dark:bg-white/10 text-gray-900 dark:text-gray-100 mb-4 outline-none focus:ring-2 focus:ring-pink-400/60" />
+      <input id="sleepTimerCustomInput" type="number" min="1" class="w-full px-3 py-2.5 rounded-xl bg-black/5 dark:bg-white/10 text-gray-900 dark:text-gray-100 mb-4 outline-none focus:ring-2 focus:ring-gray-400/60" />
       <div class="flex gap-2">
         <button id="sleepTimerCustomCancel" class="flex-1 py-2.5 rounded-xl text-sm font-medium bg-black/5 dark:bg-white/10 text-gray-800 dark:text-gray-100 transition">Hủy</button>
         <button id="sleepTimerCustomConfirm" class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-gray-900 dark:bg-white dark:text-gray-900 transition">Xác nhận</button>
@@ -549,6 +554,9 @@
   const orderIconShuffle = document.getElementById("orderIconShuffle");
   const toastContainer = document.getElementById("toastContainer");
   const volumeSlider = document.getElementById("volumeSlider");
+  const muteBtn = document.getElementById("muteBtn");
+  const volumeIconOn = document.getElementById("volumeIconOn");
+  const volumeIconOff = document.getElementById("volumeIconOff");
   const downloadBtn = document.getElementById("downloadBtn");
 
   const progressTrack = document.getElementById("progressTrack");
@@ -852,8 +860,8 @@
     } else {
       sleepTimerLabel.classList.add("hidden");
     }
-    sleepTimerBtn.classList.toggle("text-pink-500", sleepTimerMode !== "none");
-    sleepTimerBtn.classList.toggle("bg-pink-500/10", sleepTimerMode !== "none");
+    sleepTimerBtn.classList.toggle("!text-gray-900", sleepTimerMode !== "none");
+    sleepTimerBtn.classList.toggle("dark:!text-gray-100", sleepTimerMode !== "none");
     if (!sleepTimerOverlay.classList.contains("hidden")) {
       sleepTimerStatus.textContent = sleepTimerStatusText();
       sleepTimerCancelBtn.classList.toggle("hidden", sleepTimerMode === "none");
@@ -1108,7 +1116,7 @@
 
   function showToast(message) {
     const toast = document.createElement("div");
-    toast.className = "toast-msg bg-gray-900/90 dark:bg-gray-100/90 text-white dark:text-gray-900 text-sm font-medium px-4 py-2 rounded-full shadow-lg";
+    toast.className = "toast-msg bg-gray-900/90 dark:bg-gray-100/90 text-white dark:text-gray-900 text-sm font-medium px-4 py-2 rounded-full shadow-lg whitespace-nowrap";
     toast.textContent = message;
     toastContainer.appendChild(toast);
     setTimeout(() => {
@@ -1119,8 +1127,8 @@
 
   function cycleRepeat() {
     repeatMode = repeatMode === "none" ? "all" : repeatMode === "all" ? "one" : "none";
-    repeatBtn.classList.toggle("text-pink-500", repeatMode !== "none");
-    repeatBtn.classList.toggle("bg-pink-500/10", repeatMode !== "none");
+    repeatBtn.classList.toggle("!text-gray-900", repeatMode !== "none");
+    repeatBtn.classList.toggle("dark:!text-gray-100", repeatMode !== "none");
     repeatOneBadge.classList.toggle("hidden", repeatMode !== "one");
     repeatOneBadge.classList.toggle("flex", repeatMode === "one");
 
@@ -1134,8 +1142,8 @@
     if (playOrderMode !== "shuffle") shuffleHistory = [];
 
     const isOn = playOrderMode !== "off";
-    orderBtn.classList.toggle("text-pink-500", isOn);
-    orderBtn.classList.toggle("bg-pink-500/10", isOn);
+    orderBtn.classList.toggle("!text-gray-900", isOn);
+    orderBtn.classList.toggle("dark:!text-gray-100", isOn);
     orderIconShuffle.classList.toggle("hidden", playOrderMode !== "shuffle");
     orderIconSequential.classList.toggle("hidden", playOrderMode === "shuffle");
 
@@ -1266,10 +1274,33 @@
   window.addEventListener("touchend", (e) => endProgressDrag(e.changedTouches[0].clientX));
 
   // ---- Volume ----
+  let volumeBeforeMute = parseFloat(volumeSlider.value);
+
+  function updateVolumeIcon() {
+    const muted = audio.volume === 0;
+    volumeIconOn.classList.toggle("hidden", muted);
+    volumeIconOff.classList.toggle("hidden", !muted);
+  }
+
   volumeSlider.addEventListener("input", (e) => {
     audio.volume = parseFloat(e.target.value);
+    if (audio.volume > 0) volumeBeforeMute = audio.volume;
+    updateVolumeIcon();
   });
   audio.volume = parseFloat(volumeSlider.value);
+  updateVolumeIcon();
+
+  muteBtn.addEventListener("click", () => {
+    if (audio.volume > 0) {
+      volumeBeforeMute = audio.volume;
+      audio.volume = 0;
+      volumeSlider.value = 0;
+    } else {
+      audio.volume = volumeBeforeMute || 0.8;
+      volumeSlider.value = audio.volume;
+    }
+    updateVolumeIcon();
+  });
 
   // ---- Search filter ----
   searchInput.addEventListener("input", applyFilter);
