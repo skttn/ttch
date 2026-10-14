@@ -22,7 +22,37 @@
     position: fixed;
     inset: 0;
     z-index: -10;
-    transition: opacity 1200ms ease-in-out;
+    transition: opacity 900ms ease-in-out;
+  }
+
+  @keyframes coverFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .cover-fade-in {
+    animation: coverFadeIn 350ms ease-out;
+  }
+  @keyframes coverFadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  .cover-fade-out {
+    animation: coverFadeOut 220ms ease-in forwards;
+  }
+
+  @keyframes textFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  .text-fade-in {
+    animation: textFadeIn 350ms ease-out;
+  }
+  @keyframes textFadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  .text-fade-out {
+    animation: textFadeOut 220ms ease-in forwards;
   }
 
   #progressTrack, #volumeTrack {
@@ -52,11 +82,39 @@
 
   .song-row.active {
     background: rgba(255,255,255,0.55);
-    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
   }
   .dark .song-row.active {
     background: rgba(255,255,255,0.1);
-    box-shadow: 0 4px 14px rgba(0,0,0,0.3);
+  }
+
+  @keyframes rowFadeToActive {
+    from { background-color: rgba(255,255,255,0); }
+    to { background-color: rgba(255,255,255,0.55); }
+  }
+  .row-fade-to-active {
+    animation: rowFadeToActive 700ms ease-out forwards;
+  }
+  .dark .row-fade-to-active {
+    animation: rowFadeToActiveDark 700ms ease-out forwards;
+  }
+  @keyframes rowFadeToActiveDark {
+    from { background-color: rgba(255,255,255,0); }
+    to { background-color: rgba(255,255,255,0.1); }
+  }
+
+  @keyframes rowFadeFromActive {
+    from { background-color: rgba(255,255,255,0.55); }
+    to { background-color: rgba(255,255,255,0); }
+  }
+  .row-fade-from-active {
+    animation: rowFadeFromActive 700ms ease-out forwards;
+  }
+  .dark .row-fade-from-active {
+    animation: rowFadeFromActiveDark 700ms ease-out forwards;
+  }
+  @keyframes rowFadeFromActiveDark {
+    from { background-color: rgba(255,255,255,0.1); }
+    to { background-color: rgba(255,255,255,0); }
   }
 
   .spin-slow {
@@ -73,6 +131,30 @@
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(4px); }
     to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Prevent the browser's native "drag image" ghost preview (the folded-corner
+     thumbnail on Android/Chrome) and the iOS long-press callout menu, since we
+     use pointerdown/long-press ourselves for the song-info popup. */
+  img {
+    -webkit-user-drag: none;
+    user-drag: none;
+    -webkit-touch-callout: none;
+    user-select: none;
+    -webkit-user-select: none;
+  }  @keyframes toastIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes toastOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+  }
+  .toast-msg {
+    animation: toastIn 200ms ease-out;
+  }
+  .toast-msg.toast-out {
+    animation: toastOut 250ms ease-in forwards;
   }
 </style>
 </head>
@@ -107,7 +189,7 @@
           id="searchInput"
           type="text"
           placeholder="Tìm kiếm nội dung..."
-          class="w-full pl-11 pr-4 py-3 rounded-2xl bg-white/50 dark:bg-white/10 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-lg shadow-black/5 focus:outline-none focus:ring-2 focus:ring-pink-400/60 placeholder-gray-500 dark:placeholder-gray-400 text-gray-800 dark:text-gray-100 transition"
+          class="w-full pl-11 pr-4 py-3 rounded-2xl bg-white/50 dark:bg-white/10 backdrop-blur-xl border border-white/60 dark:border-white/10 shadow-lg shadow-black/5 focus:outline-none focus:ring-2 focus:ring-gray-400/60 placeholder-gray-500 dark:placeholder-gray-400 text-gray-800 dark:text-gray-100 transition"
         />
       </div>
 
@@ -125,7 +207,7 @@
 
   <!-- Player bar (fixed bottom) -->
   <footer class="fixed bottom-0 left-0 right-0 z-30 px-3 pb-3 md:px-6 md:pb-5">
-    <div class="max-w-3xl mx-auto bg-white/60 dark:bg-white/10 backdrop-blur-2xl border border-white/70 dark:border-white/10 rounded-3xl shadow-2xl shadow-black/10 px-4 py-3 md:px-6 md:py-4">
+    <div class="max-w-3xl mx-auto bg-white/90 dark:bg-gray-900/90 border border-white/70 dark:border-white/10 rounded-3xl shadow-2xl shadow-black/10 px-4 py-3 md:px-6 md:py-4">
 
       <!-- Progress bar -->
       <div class="flex items-center gap-3 mb-2">
@@ -137,26 +219,28 @@
         <span id="durationTime" class="text-xs font-medium text-gray-500 dark:text-gray-300 w-10 tabular-nums">00:00</span>
       </div>
 
-      <div class="flex items-center justify-between gap-3">
-        <!-- Cover + info -->
-        <div class="flex items-center gap-3 min-w-0 flex-1">
-          <img id="playerCover" src="" alt="cover" class="w-14 h-14 md:w-16 md:h-16 rounded-xl object-cover shadow-md flex-shrink-0" />
-          <div class="min-w-0">
-            <p id="playerTitle" class="font-semibold text-gray-900 dark:text-gray-100 truncate text-base md:text-lg">Chọn một bài hát</p>
-            <p id="playerArtist" class="text-sm md:text-base text-gray-500 dark:text-gray-400 truncate">—</p>
-          </div>
+      <div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
+        <!-- Sleep timer (left) -->
+        <div class="flex items-center justify-self-start">
+          <button id="sleepTimerBtn" title="Hẹn giờ tắt nhạc" class="relative p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:scale-105 active:scale-95 transition flex flex-col items-center justify-center">
+            <svg class="w-6 h-6 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="13" r="8" stroke-linecap="round" stroke-linejoin="round" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4l3 2M9 2h6" />
+            </svg>
+            <span id="sleepTimerLabel" class="hidden text-[11px] font-semibold text-gray-900 dark:text-gray-100 tabular-nums whitespace-nowrap leading-none mt-1"></span>
+          </button>
         </div>
 
-        <!-- Controls -->
+        <!-- Playback controls (always centered) -->
         <div class="flex items-center gap-1 md:gap-3">
-          <button id="repeatBtn" title="Lặp lại" class="relative p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-black/5 dark:hover:bg-white/10 transition">
+          <button id="repeatBtn" title="Lặp lại" class="relative p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:scale-105 active:scale-95 transition">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M17 2l4 4-4 4M3 12v-2a4 4 0 014-4h14M7 22l-4-4 4-4M21 12v2a4 4 0 01-4 4H3" />
             </svg>
-            <span id="repeatOneBadge" class="hidden absolute -top-0.5 -right-0.5 text-[9px] font-bold bg-pink-500 text-white rounded-full w-3.5 h-3.5 items-center justify-center">1</span>
+            <span id="repeatOneBadge" class="hidden absolute inset-0 items-center justify-center text-[11px] font-bold" style="transform: translateY(1px);">1</span>
           </button>
 
-          <button id="prevBtn" title="Bài trước" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition">
+          <button id="prevBtn" title="Bài trước" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:scale-105 active:scale-95 transition">
             <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
           </button>
 
@@ -165,18 +249,39 @@
             <svg id="pauseIcon" class="w-6 h-6 hidden" fill="currentColor" viewBox="0 0 24 24"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>
           </button>
 
-          <button id="nextBtn" title="Bài kế" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition">
+          <button id="nextBtn" title="Bài kế" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:scale-105 active:scale-95 transition">
             <svg class="w-7 h-7" fill="currentColor" viewBox="0 0 24 24"><path d="M16 6h2v12h-2zM6 6l8.5 6L6 18z"/></svg>
           </button>
 
-          <div class="hidden md:flex items-center gap-2 ml-2">
-            <svg class="w-5 h-5 text-gray-500 dark:text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM19 12a4 4 0 00-2-3.46M22 12a7 7 0 00-3-5.75" />
+          <button id="orderBtn" title="Thứ tự phát" class="relative p-2 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:scale-105 active:scale-95 transition">
+            <svg id="orderIconSequential" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M2 8h16M14 3l5 5-5 5" />
+              <path d="M2 16h16M14 11l5 5-5 5" />
             </svg>
+            <svg id="orderIconShuffle" class="w-6 h-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="19" x2="19" y2="5" />
+              <polyline points="12 5 19 5 19 12" />
+              <line x1="5" y1="5" x2="19" y2="19" />
+              <polyline points="19 12 19 19 12 19" />
+            </svg>
+          </button>
+        </div>
+
+        <!-- Volume + download (right) -->
+        <div class="flex items-center gap-1 md:gap-3 justify-self-end">
+          <div class="hidden md:flex items-center gap-2">
+            <button id="muteBtn" title="Tắt/Bật tiếng" class="p-1 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:scale-105 active:scale-95 transition">
+              <svg id="volumeIconOn" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM19 12a4 4 0 00-2-3.46M22 12a7 7 0 00-3-5.75" />
+              </svg>
+              <svg id="volumeIconOff" class="w-5 h-5 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5L6 9H2v6h4l5 4V5zM23 9l-6 6M17 9l6 6" />
+              </svg>
+            </button>
             <input id="volumeSlider" type="range" min="0" max="1" step="0.01" value="0.8" class="w-20" />
           </div>
 
-          <button id="downloadBtn" title="Tải về" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:bg-black/5 dark:hover:bg-white/10 transition">
+          <button id="downloadBtn" title="Tải về" class="p-2 rounded-full text-gray-700 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:scale-105 active:scale-95 transition">
             <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
             </svg>
@@ -186,7 +291,9 @@
     </div>
   </footer>
 
-  <audio id="audioPlayer" preload="metadata"></audio>
+  <div id="toastContainer" class="fixed left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center" style="bottom: 100px;"></div>
+
+  <audio id="audioPlayer" preload="auto"></audio>
 
   <!-- Song info overlay (opened via long-press/press-and-hold on a row) -->
   <div id="songInfoOverlay" class="hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
@@ -196,7 +303,7 @@
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
         </svg>
       </button>
-      <img id="songInfoCover" src="" alt="" class="w-24 h-24 rounded-2xl object-cover shadow-md mx-auto mb-4" />
+      <img id="songInfoCover" src="" alt="" draggable="false" class="w-24 h-24 rounded-2xl object-cover shadow-md mx-auto mb-4" />
       <p id="songInfoTitle" class="text-center font-semibold text-lg text-gray-900 dark:text-gray-100 mb-1"></p>
       <p id="songInfoArtist" class="text-center text-sm text-gray-500 dark:text-gray-400 mb-3"></p>
       <div class="space-y-2 text-sm border-t border-black/5 dark:border-white/10 pt-3">
@@ -204,6 +311,49 @@
         <div class="flex justify-between gap-3"><span class="text-gray-500 dark:text-gray-400">Thời lượng</span><span id="songInfoDuration" class="font-medium text-gray-800 dark:text-gray-200"></span></div>
       </div>
       <div id="songInfoTags" class="flex flex-wrap gap-1.5 mt-3"></div>
+    </div>
+  </div>
+
+  <!-- Sleep timer overlay -->
+  <div id="sleepTimerOverlay" class="hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-sm w-full p-5 relative">
+      <button id="sleepTimerCloseBtn" title="Đóng" class="absolute top-3 right-3 p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-black/5 dark:hover:bg-white/10 transition">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+
+      <p class="font-semibold text-lg text-gray-900 dark:text-gray-100 mb-1">Hẹn giờ tắt nhạc</p>
+      <p id="sleepTimerStatus" class="text-sm text-gray-500 dark:text-gray-400 mb-4">Chưa bật hẹn giờ</p>
+
+      <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-2">Theo thời gian</p>
+      <div class="grid grid-cols-3 gap-2 mb-4">
+        <button data-timer-minutes="15" class="sleep-timer-option py-2.5 rounded-xl text-sm font-medium bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-gray-800 dark:text-gray-100 transition">15 phút</button>
+        <button data-timer-minutes="30" class="sleep-timer-option py-2.5 rounded-xl text-sm font-medium bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-gray-800 dark:text-gray-100 transition">30 phút</button>
+        <button id="sleepTimerCustomMinutesBtn" class="sleep-timer-option py-2.5 rounded-xl text-sm font-medium bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-gray-800 dark:text-gray-100 transition">Tùy chọn</button>
+      </div>
+
+      <p class="text-xs font-semibold uppercase tracking-wide text-gray-400 dark:text-gray-500 mb-2">Theo số bài hát</p>
+      <div class="grid grid-cols-4 gap-2 mb-4">
+        <button data-timer-songs="3" class="sleep-timer-option py-2.5 rounded-xl text-sm font-medium bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-gray-800 dark:text-gray-100 transition">3 bài</button>
+        <button data-timer-songs="5" class="sleep-timer-option py-2.5 rounded-xl text-sm font-medium bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-gray-800 dark:text-gray-100 transition">5 bài</button>
+        <button data-timer-songs="7" class="sleep-timer-option py-2.5 rounded-xl text-sm font-medium bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-gray-800 dark:text-gray-100 transition">7 bài</button>
+        <button id="sleepTimerCustomSongsBtn" class="sleep-timer-option py-2.5 rounded-xl text-sm font-medium bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 text-gray-800 dark:text-gray-100 transition">Tùy chọn</button>
+      </div>
+
+      <button id="sleepTimerCancelBtn" class="hidden w-full py-2.5 rounded-xl text-sm font-semibold text-gray-900 dark:text-gray-100 bg-black/5 dark:bg-white/10 hover:bg-black/10 dark:hover:bg-white/20 transition">Tắt hẹn giờ</button>
+    </div>
+  </div>
+
+  <!-- Small inline prompt for custom minutes/songs -->
+  <div id="sleepTimerCustomOverlay" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-gray-900 rounded-3xl shadow-2xl max-w-xs w-full p-5">
+      <p id="sleepTimerCustomLabel" class="font-semibold text-gray-900 dark:text-gray-100 mb-3">Nhập số phút</p>
+      <input id="sleepTimerCustomInput" type="number" min="1" class="w-full px-3 py-2.5 rounded-xl bg-black/5 dark:bg-white/10 text-gray-900 dark:text-gray-100 mb-4 outline-none focus:ring-2 focus:ring-gray-400/60" />
+      <div class="flex gap-2">
+        <button id="sleepTimerCustomCancel" class="flex-1 py-2.5 rounded-xl text-sm font-medium bg-black/5 dark:bg-white/10 text-gray-800 dark:text-gray-100 transition">Hủy</button>
+        <button id="sleepTimerCustomConfirm" class="flex-1 py-2.5 rounded-xl text-sm font-semibold text-white bg-gray-900 dark:bg-white dark:text-gray-900 transition">Xác nhận</button>
+      </div>
     </div>
   </div>
 
@@ -217,6 +367,24 @@
     "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?w=300&h=300&fit=crop&auto=format&q=80", // sương sớm trên đỉnh núi
     "https://images.unsplash.com/photo-1454496522488-7a8e488e8606?w=300&h=300&fit=crop&auto=format&q=80", // núi tuyết soi bóng mặt hồ
     "https://images.unsplash.com/photo-1433086966358-54859d0ed716?w=300&h=300&fit=crop&auto=format&q=80", // thác nước giữa rừng
+    "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&h=300&fit=crop&auto=format&q=80", // nắng xuyên qua rừng thông
+    "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=300&h=300&fit=crop&auto=format&q=80", // núi phản chiếu mặt hồ
+    "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=300&h=300&fit=crop&auto=format&q=80", // dãy núi mờ sương
+    "https://images.unsplash.com/photo-1441716844725-09cedc13a4e7?w=300&h=300&fit=crop&auto=format&q=80", // thung lũng xanh
+    "https://images.unsplash.com/photo-1500534623283-312aade485b7?w=300&h=300&fit=crop&auto=format&q=80", // dãy núi rực rỡ lúc hoàng hôn
+    "https://images.unsplash.com/photo-1518495973542-4542c06a5843?w=300&h=300&fit=crop&auto=format&q=80", // ánh nắng xuyên rừng cây
+    "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=300&h=300&fit=crop&auto=format&q=80", // rừng thông mờ sương
+    "https://images.unsplash.com/photo-1470770903676-69b98201ea1c?w=300&h=300&fit=crop&auto=format&q=80", // dãy núi soi bóng mặt hồ
+    "https://images.unsplash.com/photo-1426604966848-d7adac402bff?w=300&h=300&fit=crop&auto=format&q=80", // tán rừng nhìn từ dưới lên
+    "https://images.unsplash.com/photo-1447752875215-b2761acb3c5d?w=300&h=300&fit=crop&auto=format&q=80", // con đường rừng mờ sương
+    "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=300&h=300&fit=crop&auto=format&q=80", // sóng biển
+    "https://images.unsplash.com/photo-1439066615861-d1af74d74000?w=300&h=300&fit=crop&auto=format&q=80", // thác nước từ trên cao
+    "https://images.unsplash.com/photo-1501594907352-04cda38ebc29?w=300&h=300&fit=crop&auto=format&q=80", // đỉnh núi tuyết
+    "https://images.unsplash.com/photo-1477346611705-65d1883cee1e?w=300&h=300&fit=crop&auto=format&q=80", // dải ngân hà trên núi
+    "https://images.unsplash.com/photo-1500375592092-40eb2168fd21?w=300&h=300&fit=crop&auto=format&q=80", // tia nắng xuyên rừng
+    "https://images.unsplash.com/photo-1497436072909-60f360e1d4b1?w=300&h=300&fit=crop&auto=format&q=80", // hồ nước tĩnh lặng
+    "https://images.unsplash.com/photo-1519681393784-d120267933ba?w=300&h=300&fit=crop&auto=format&q=80", // đồi cỏ xanh trập trùng
+    "https://images.unsplash.com/photo-1476611317561-60117649dd94?w=300&h=300&fit=crop&auto=format&q=80", // sa mạc
   ];
 
   function natureCover(idx) {
@@ -235,93 +403,373 @@
 
   // raw object keys exactly as uploaded to Cloudflare R2, tagged by mood/genre
   const songFiles = [
-    { file: "🎵 Đừng Chờ Nữa (Tay Trái Chỉ Trăng - Nhạc Ngoại) • Đơn Ca Nữ (TTCH - Số 317).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
-    { file: "🎵 Đôi Bờ Tâm Tư (Đôi Bờ - Nhạc ngoại) • Đơn Ca Nam 2 (TTCH - Số 94).mp3", tags: ["Trữ Tình", "Bình Yên"] },
-    { file: "🎵 Đôi Bờ Tâm Tư (Đôi Bờ - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 94).mp3", tags: ["Trữ Tình", "Bình Yên"] },
-    { file: "🎵 Xây Đắp Tình Yêu (Phi Điểu Và Ve Sầu - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 417).mp3", tags: ["Nhạc Trẻ", "Bình Yên"] },
-    { file: "🎵 Xuân Thái Bình- (Magic Boulevard) (Ngày Vui Năm Ấy - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 791).mp3", tags: ["Tích Cực", "Nhạc Trẻ"] },
-    { file: "🎵 Về Đây Thôi (Trở Về Mái Nhà Xưa - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 578).mp3", tags: ["Cổ Điển", "Bình Yên"] },
-    { file: "🎵 Về Đây Thôi (Trở Về Mái Nhà Xưa - Nhạc ngoại) • Song Ca Nam Nữ (TTCH - Số 578).mp3", tags: ["Cổ Điển", "Bình Yên"] },
-    { file: "🎵 Về Đây Ngay Nhé (Un-Break My Heart - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 469).mp3", tags: ["Trữ Tình"] },
-    { file: "🎵 Về Với Thiên Nhiên (Tinh Ca Du Mục - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 39).mp3", tags: ["Tích Cực"] },
-    { file: "🎵 Viens M’Embrasser - Yêu Thiên Nhiên (Lại Gần Hôn Anh - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 805).mp3", tags: ["Trữ Tình", "Bình Yên"] },
-    { file: "🎵 Từ Tâm Chiếu Hoài- (Paroles Paroles) (Những Lời Mê Hoặc - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 792).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
-    { file: "🎵 Tình Mãi Chất Ngất (Casablanca - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 435).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
-    { file: "🎵 Tình Bao La (Trở Về Mái Nhà Xưa - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 83).mp3", tags: ["Cổ Điển", "Bình Yên"] },
-    { file: "🎵 Tâm Nguyện (Over And Over - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 15).mp3", tags: ["Cổ Điển", "Tích Cực"] },
-    { file: "🎵 Tâm Giác (Green Fields - Nhạc ngoại) • Đơn Ca Nữ 2 (TTCH - Số 6).mp3", tags: ["Cổ Điển", "Bình Yên"] },
-    { file: "🎵 Tâm Giác (Green Fields - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 6).mp3", tags: ["Cổ Điển", "Bình Yên"] },
-    { file: "🎵 Trở Về Quê Hương (Xin Chào Việt Nam - Nhạc ngoại) • Đơn Ca Nữ 2 (TTCH - Số 96).mp3", tags: ["Tích Cực", "Bình Yên"] },
-    { file: "🎵 Trở Về Quê Hương (Xin Chào Việt Nam - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 96).mp3", tags: ["Tích Cực", "Bình Yên"] },
-    { file: "🎵 Trên Đồi Vắng (Triệu Hoa Hồng - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 8).mp3", tags: ["Trữ Tình", "Bình Yên"] },
-    { file: "🎵 Trái Tim Cho Đời (Trời Còn Mưa Mãi - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 591).mp3", tags: ["Trữ Tình"] },
-    { file: "🎵 Thực Tập Tĩnh Tâm (Một Triệu Khả Năng - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 411).mp3", tags: ["Nhạc Trẻ", "Bình Yên"] },
-    { file: "🎵 Thắp Sáng Niềm Tin (Bản Tình Ca Đơn Côi - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 594).mp3", tags: ["Tích Cực", "Trữ Tình", "Nhạc Trẻ"] },
-    { file: "🎵 Thân Thương Lâu Rồi (Mùa Hoa Anh Đào - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 211).mp3", tags: ["Trữ Tình"] },
-    { file: "🎵 Thiên Nhiên Bao Dung (Nụ Hồng Mong Manh - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 181).mp3", tags: ["Trữ Tình", "Nhạc Trẻ"] },
-    { file: "🎵 Ta Cùng Nhau Hạnh Phúc (Shalala Lala - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 465).mp3", tags: ["Tích Cực", "Nhạc Trẻ"] },
-    { file: "🎵 Ta Chung Vui (APT - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 179).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
-    { file: "🎵 Sống Xuân (Nắng Xuân (Solenzara) - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 782).mp3", tags: ["Tích Cực", "Trữ Tình"] },
-    { file: "🎵 Sống Nhàn (The Sound Of Silence - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 433).mp3", tags: ["Cổ Điển", "Bình Yên"] },
-    { file: "🎵 Sống Chung An Hòa (Right Here Waiting - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 451).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
-    { file: "🎵 Sáng Tâm (Ánh Trăng Nói Hộ Lòng Tôi - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 781).mp3", tags: ["Trữ Tình", "Bình Yên"] },
-    { file: "🎵 Sans Elle- Biết Chính Mình (Nếu Vắng Nàng - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 803).mp3", tags: ["Trữ Tình"] },
-    { file: "🎵 Quyết Dừng (Tiếc Thương (Donna Donna) - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 229).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
-    { file: "🎵 Quay Về Đây (Cây Thuỳ Dương - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 785).mp3", tags: ["Cổ Điển", "Bình Yên"] },
-    { file: "🎵 Quay Về Trân Quý (Vũ Nữ Thân Gầy (La Cumparsa) - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 784).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
-    { file: "🎵 Quay Về (Chiều Matxcova - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 41).mp3", tags: ["Cổ Điển", "Bình Yên"] },
-    { file: "🎵 Oh! Mon Amour (Tình Yêu Ôi Tình Yêu - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 804).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
-    { file: "🎵 Oh! Mon Amour (Tình Yêu Ôi Tình Yêu - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 804).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
-    { file: "🎵 Nổi Gió Lên (Nối Gió Rồi - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 414).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
-    { file: "🎵 Nue Comme La Mer- Mùa Hè Như Xuân (Mùa Hè Tuyết Rơi - Nhạc ngoại) • Đơn Ca Nữ 2 (TTCH - Số 797).mp3", tags: ["Trữ Tình", "Nhạc Trẻ"] },
-    { file: "🎵 Nue Comme La Mer- Mùa Hè Như Xuân (Mùa Hè Tuyết Rơi - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 797).mp3", tags: ["Trữ Tình", "Nhạc Trẻ"] },
-    { file: "🎵 Niềm Tin Sâu (Hello - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 84).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
-    { file: "🎵 Những Nụ Tình Xanh (Tous Les Garcons Et Les Filles) (Những Nụ Tình Xanh (Tous Les Garcons Et Les Filles) - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 799).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
-    { file: "🎵 Nhớ Về Người (Đau Thương Chỉ Vì Em - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 590).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
-    { file: "🎵 Nhớ Ngồi Bình Yên (Em Đẹp Như Mơ - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 43).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
-    { file: "🎵 Ngồi Bình Yên Tuyệt Vời (Chuyện Tình Yêu - Nhạc ngoại) • Đơn Ca Nữ 2 (TTCH - Số 44).mp3", tags: ["Trữ Tình", "Tích Cực"] },
-    { file: "🎵 Ngồi Bình Yên Tuyệt Vời (Chuyện Tình Yêu - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 44).mp3", tags: ["Trữ Tình", "Tích Cực"] },
-    { file: "🎵 Ngay Đây Thôi (It's Now Or Never - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 85).mp3", tags: ["Cổ Điển", "Trữ Tình", "Bình Yên"] },
-    { file: "🎵 Một Ngày Quyết Tâm (Mùa Thu Lá Bay - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 158).mp3", tags: ["Trữ Tình"] },
-    { file: "🎵 Mãi Được Yêu (Độ Ta Không Độ Nàng - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 680).mp3", tags: ["Nhạc Trẻ"] },
-    { file: "🎵 Maman Oh Maman-Về Lại Nguồn Tâm Sáng (Người Mẹ Hiền Yêu Dấu - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 794).mp3", tags: ["Trữ Tình", "Bình Yên"] },
-    { file: "🎵 Le Tems De L'Amour - Ngồi Bình Yên (Mùa Tình Yêu - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 807).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
-    { file: "🎵 La Chanson D’Orphee (Bài Ngợi Ca Tình Yêu - Nhạc ngoại) • Song Ca Nam Nữ (TTCH - Số 798).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
-    { file: "🎵 Không Ngăn Cách (Người Tình Mùa Đông - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 104).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
-    { file: "🎵 Khiêm Nhường (Em Đẹp Như Mơ (Elle Était Si Jolie) - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 783).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
-    { file: "🎵 Học Cách Lắng Nghe (Búp Bê Không Tình Yêu (Poupeé De Cire, De Son) - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 786).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
-    { file: "🎵 Hạnh Phúc Bình Dị (Childhood Memories - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 89).mp3", tags: ["Bình Yên", "Cổ Điển"] },
-    { file: "🎵 Hòa Xuân Sống (Triệu Rose - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 744).mp3", tags: ["Trữ Tình", "Bình Yên"] },
-    { file: "🎵 Hòa Chung Niềm Vui (Colors Of The Wind - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 457).mp3", tags: ["Cổ Điển", "Bình Yên"] },
-    { file: "🎵 Giác Nhanh Lên (Tuyết Rơi - Tombe La Neige - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 36).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
-    { file: "🎵 Giác Ngộ (My Heart Will Go On - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 16).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
-    { file: "🎵 Em Quay Về (Mây Lang Thang - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 187).mp3", tags: ["Trữ Tình", "Nhạc Trẻ"] },
-    { file: "🎵 Em Biết Tu (Khi Xưa Ta Bé - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 57).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
-    { file: "🎵 Dhamma Sota (500 Miles - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 72).mp3", tags: ["Cổ Điển", "Bình Yên"] },
-    { file: "🎵 Delilah- Tình Đẹp (Tình Hận - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 795).mp3", tags: ["Trữ Tình"] },
-    { file: "🎵 Cần Kiếm Chi (The End Of The World - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 447).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
-    { file: "🎵 Cùng Nhau Tu (Guantanamera - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 80).mp3", tags: ["Cổ Điển", "Tích Cực"] },
-    { file: "🎵 Cùng Nhau Bình Yên (If We Hold On Together - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 470).mp3", tags: ["Cổ Điển", "Bình Yên"] },
-    { file: "🎵 Cùng Có Nhau (Vĩnh Biệt Màu Xanh - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 342).mp3", tags: ["Trữ Tình"] },
-    { file: "🎵 Có Nhớ Yêu Ta Chưa (Will You Love Me Tomorrow - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 438).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
-    { file: "🎵 Con Đường Giải Thoát (Love Story - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 13).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
-    { file: "🎵 Chăm Sóc Thiên Nhiên (Yesterday - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 431).mp3", tags: ["Cổ Điển", "Bình Yên"] },
-    { file: "🎵 Chăm Sóc Má Ba (Forever - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 453).mp3", tags: ["Trữ Tình"] },
-    { file: "🎵 Chuyển Tâm (Đôi Bờ - Nhạc ngoại) • Đơn Ca Nữ 2 (TTCH - Số 40).mp3", tags: ["Trữ Tình", "Bình Yên"] },
-    { file: "🎵 Chuyển Tâm (Đôi Bờ - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 40).mp3", tags: ["Trữ Tình", "Bình Yên"] },
-    { file: "🎵 Chung Sống An (I'd Love You To Want Me - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 443).mp3", tags: ["Cổ Điển", "Bình Yên"] },
-    { file: "🎵 Cha Kính Yêu (Papa - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 434).mp3", tags: ["Trữ Tình", "Bình Yên"] },
-    { file: "🎵 Bọt Bóng (Triệu Hoa Hồng - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 7).mp3", tags: ["Trữ Tình", "Bình Yên"] },
-    { file: "🎵 Bọt Bóng (Triệu Hoa Hồng - Nhạc ngoại) • Đơn Ca Nữ  2 (TTCH - Số 7).mp3", tags: ["Trữ Tình", "Bình Yên"] },
-    { file: "🎵 Buông Xả (Love Is Blue - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 14).mp3", tags: ["Cổ Điển", "Bình Yên"] },
-    { file: "🎵 Biết Ơn (Over And Over - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 583).mp3", tags: ["Cổ Điển", "Tích Cực"] },
-    { file: "🎵 Biết Ơn (Over And Over - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 583).mp3", tags: ["Cổ Điển", "Tích Cực"] },
-    { file: "🎵 Biết Yêu Chính Ta (Good Morning - Nhạc ngoại) • Đơn Ca Nữ (TTCH - Số 178).mp3", tags: ["Tích Cực"] },
-    { file: "🎵 Biết Sống Thanh Cao (Faithful - Nhạc ngoại) • Đơn Ca Nam (TTCH - Số 442).mp3", tags: ["Bình Yên", "Trữ Tình"] }
+    { file: "An Lành Cùng Xuân (Cảm Ơn - Sưu tầm) . Đơn ca (TTCH - Số 721).mp3", tags: ["Tích Cực"] },
+    { file: "An Nhiên Tuyệt Vời (Rước Tình Về Với Quê Hương - Sưu tầm) . Đơn ca (TTCH - Số 280).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "An Yên Suốt Đời) (Tình Muộn - Sưu tầm) . Đơn ca (TTCH - Số 714).mp3", tags: ["Trữ Tình"] },
+    { file: "Bài Ngợi Ca Tình Yêu (Bài Ngợi Ca Tình Yêu - Sưu tầm) . Song Ca (TTCH - Số 798).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
+    { file: "Bạn Tri Kỷ (Đừng Xa Em - Sưu tầm) . Đơn ca (TTCH - Số 552).mp3", tags: ["Trữ Tình"] },
+    { file: "Bạn Tri Kỷ (Đừng Xa Em - Sưu tầm) . Đơn ca 2 (TTCH - Số 552).mp3", tags: ["Trữ Tình"] },
+    { file: "Bạn Tri Kỷ (Đừng Xa Em - Sưu tầm) . Đơn ca 3 (TTCH - Số 552).MP3", tags: ["Trữ Tình"] },
+    { file: "Bao Giờ Biết Quay Về (Em Còn Nhớ Mùa Xuân - Sưu tầm) . Đơn ca (TTCH - Số 237).mp3", tags: ["Trữ Tình"] },
+    { file: "Bây Giờ Và Mãi Sau (Ko Tên 50 - Sưu tầm) . Đơn ca (TTCH - Số 336).mp3", tags: ["Trữ Tình"] },
+    { file: "Bên Nhau Suốt Đời (Tình Muộn - Sưu tầm) . Đơn ca 2 (TTCH - Số 714).mp3", tags: ["Trữ Tình"] },
+    { file: "Biết Chính Mình (Nếu Vắng Nàng - Sưu tầm) . Đơn ca (TTCH - Số 803).mp3", tags: ["Trữ Tình"] },
+    { file: "Biết Được Tâm Mình (Chuyện Tình Cô Lái Đò Bến Hạ - Sưu tầm) . Đơn ca (TTCH - Số 649).mp3", tags: ["Trữ Tình"] },
+    { file: "Biết Ơn (Over And Over - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 583).mp3", tags: ["Cổ Điển", "Tích Cực"] },
+    { file: "Biết Ơn (Over And Over - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 583).mp3", tags: ["Cổ Điển", "Tích Cực"] },
+    { file: "Biết Ơn Thầy (Tạ Ơn Thầy - Sưu tầm) . Đơn ca (TTCH - Số 576).mp3", tags: ["Tích Cực"] },
+    { file: "Biết Sống Thanh Cao (Faithful - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 442).mp3", tags: ["Bình Yên", "Trữ Tình"] },
+    { file: "Biết Thương Mình (Biết Thương Mình - Sưu tầm) . Đơn ca (TTCH - Số 000).mp3", tags: ["Bình Yên", "Tích Cực"] },
+    { file: "Biết Yêu Chính Ta (Good Morning - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 178).mp3", tags: ["Tích Cực"] },
+    { file: "Biết Yêu Được Ta (Phút Cuối - Sưu tầm) . Đơn ca (TTCH - Số 257).mp3", tags: ["Trữ Tình"] },
+    { file: "Biết... (Tình Đất - Sưu tầm) . Đơn ca (TTCH - Số 190).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Bình An Để.... (Giã Từ Vũ Khí - Sưu tầm) . Đơn ca (TTCH - Số 253).mp3", tags: ["Trữ Tình"] },
+    { file: "Bình An Mọi Chốn (Bên Đời Hiu Quạnh - Sưu tầm) . Đơn ca (TTCH - Số 554).mp3", tags: ["Trữ Tình"] },
+    { file: "Bình An Thanh Nhàn (Lời Thiên Thu Gọi - Sưu tầm) . Đơn ca (TTCH - Số 712).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Bình Thường An Nhiên (Tạ Từ Trong Đêm - Sưu tầm) . Đơn ca (TTCH - Số 125).mp3", tags: ["Trữ Tình"] },
+    { file: "Bình Thường Thôi Em (Xin Làm Người Xa Lạ - Sưu tầm) . Đơn ca (TTCH - Số 244).mp3", tags: ["Trữ Tình"] },
+    { file: "Bọt Bóng (Triệu Hoa Hồng - Nhạc ngoại) . Đơn Ca Nữ  2 (TTCH - Số 7).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Bọt Bóng (Triệu Hoa Hồng - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 7).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Buông Bớt (Tôi Muốn - Sưu tầm) . Đơn ca (TTCH - Số 801).mp3", tags: ["Tích Cực"] },
+    { file: "Buông Bớt (Tôi Muốn - Sưu tầm) . Đơn ca 2 (TTCH - Số 801).mp3", tags: ["Tích Cực"] },
+    { file: "Buông Đi Để An (Thói Đời - Sưu tầm) . Đơn ca (TTCH - Số 137).mp3", tags: ["Trữ Tình"] },
+    { file: "Buông Xả (Love Is Blue - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 14).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Cảm Ơn Nhiều (Cảm Ơn Một Niềm Đau - Sưu tầm) . Đơn ca (TTCH - Số 315).mp3", tags: ["Trữ Tình"] },
+    { file: "Cát Bụi Cuộc Đời (Cát Bụi Cuộc Đời - Sưu tầm) . Đơn ca (TTCH - Số 566).mp3", tags: ["Trữ Tình"] },
+    { file: "Cân Bằng Cuộc Sống (Ko Tên 5 - Sưu tầm) . Đơn ca (TTCH - Số 217).mp3", tags: ["Trữ Tình"] },
+    { file: "Cần Được Bình An (Em Cũng Cần 1 Bờ Vai - Sưu tầm) . Đơn ca (TTCH - Số 788).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Cần Kiếm Chi (The End Of The World - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 447).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "Cần Quay Vô Thân Tâm (Ngày Xưa Lên 5 Lên 3 - Sưu tầm) . Đơn ca (TTCH - Số 531).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Cần Tìm Chi (Cuốn Theo Chiều Gió - Sưu tầm) . Đơn ca (TTCH - Số 313).mp3", tags: ["Trữ Tình"] },
+    { file: "Cần Trở Về Lại (Đường Về Quê Hương - Sưu tầm) . Đơn ca (TTCH - Số 532).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Cần Trở Về Trong Tâm (Nhìn Những Mùa Thu Đi - Sưu tầm) . Đơn ca (TTCH - Số 520).mp3", tags: ["Trữ Tình"] },
+    { file: "Cha Kính Yêu (Papa - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 434).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Cha Kính Yêu (Papa - Sưu tầm) . Đơn ca (TTCH - Số 434).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Chăm Má Ba (Nắng Thuỷ Tinh - Sưu tầm) . Đơn ca (TTCH - Số 519).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Chăm Sóc Má Ba (Forever - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 453).mp3", tags: ["Trữ Tình"] },
+    { file: "Chăm Sóc Thiên Nhiên (Yesterday - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 431).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Chăm Sóc Thường Xuyên (Chiều Tây Đô - Sưu tầm) . Đơn ca (TTCH - Số 314).mp3", tags: ["Trữ Tình"] },
+    { file: "Chỉ Cần (Hoa Nở Không Màu - Sưu tầm) . Đơn ca (TTCH - Số 165).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Cho Con Nguyện (Cho Tôi Được 1 Lần - Sưu tầm) . Đơn ca (TTCH - Số 81).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Chờ Đến Bao Giờ (Chờ Người - Sưu tầm) . Đơn ca (TTCH - Số 99).mp3", tags: ["Trữ Tình"] },
+    { file: "Chúc Mừng Năm Mới (Happy New Year - Sưu tầm) . Tam ca (TTCH - Số 456).mp3", tags: ["Cổ Điển", "Tích Cực"] },
+    { file: "Chung Sống An (I'd Love You To Want Me - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 443).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Chung Sức Cùng Nhau (Thao Thức Vì Em - Sưu tầm) . Đơn ca (TTCH - Số 704).mp3", tags: ["Trữ Tình"] },
+    { file: "Chuyện Đời Tu (Chuyện Hoa Sim - Sưu tầm) . Đơn ca (TTCH - Số 119).mp3", tags: ["Trữ Tình"] },
+    { file: "Chuyển Hoá (Ôi Giàn Thiên Lý Đã Xa - Sưu tầm) . Đơn ca (TTCH - Số 42).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Chuyển Tâm (Đôi Bờ - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 40).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Chuyển Tâm (Đôi Bờ - Nhạc ngoại) . Đơn Ca Nữ 2 (TTCH - Số 40).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Chuyển Tâm (Đôi Bờ - Sưu tầm) . Đơn ca (TTCH - Số 40).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Có Đến Thì Đi (Tuý Âm - Sưu tầm) . Đơn ca (TTCH - Số 324).mp3", tags: ["Nhạc Trẻ"] },
+    { file: "Có Ngay Bình An (Ô Mê Ly - Sưu tầm) . Đơn ca (TTCH - Số 188).mp3", tags: ["Tích Cực"] },
+    { file: "Có Ngay Bình An (Ô Mê Ly - Sưu tầm) . Đơn ca 2 (TTCH - Số 188).mp3", tags: ["Tích Cực"] },
+    { file: "Có Nhau Mọi Thời (Mất Nhau Rồi - Sưu tầm) . Đơn ca (TTCH - Số 163).mp3", tags: ["Trữ Tình"] },
+    { file: "Có Nhớ Yêu Ta Chưa (Will You Love Me Tomorrow - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 438).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "Có Xuân Bền Lâu (Mưa Trên Biển Vắng - Sưu tầm) . Đơn ca (TTCH - Số 793).mp3", tags: ["Trữ Tình"] },
+    { file: "Con Đường Giải Thoát (Love Story - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 13).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "Con Đường Tu (Con Đường Xưa Em Đi - Sưu tầm) . Đơn ca (TTCH - Số 177).mp3", tags: ["Trữ Tình"] },
+    { file: "Cùng Có Nhau (Vĩnh Biệt Màu Xanh - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 342).mp3", tags: ["Trữ Tình"] },
+    { file: "Cùng Có Nhau (Vĩnh Biệt Màu Xanh - Sưu tầm) . Đơn ca (TTCH - Số 342).mp3", tags: ["Trữ Tình"] },
+    { file: "Cùng Có Với Nhau (Anh Đợi Em Được Không - Sưu tầm) . Đơn ca (TTCH - Số 322).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Cùng Nhau Bình Yên (If We Hold On Together - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 470).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Cùng Nhau Tu (Guantanamera - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 80).mp3", tags: ["Cổ Điển", "Tích Cực"] },
+    { file: "Cuộc Đời Là Hư Vô (Xin Thời Gian Qua Mau - Sưu tầm) . Đơn ca (TTCH - Số 603).mp3", tags: ["Trữ Tình"] },
+    { file: "Cuộc Đời Vẫn Đẹp Sao (Cuộc Đời Vẫn Đẹp Sao - Sưu tầm) . Đơn ca (TTCH - Số 708).mp3", tags: ["Tích Cực"] },
+    { file: "Delilah- Tình Đẹp (Tình Hận - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 795).mp3", tags: ["Trữ Tình"] },
+    { file: "Dhamma Setu (Dhamma Setu - Sưu tầm) . Đơn ca (TTCH - Số 763).mp3", tags: ["Bình Yên"] },
+    { file: "Dhamma Setu (Dhamma Setu - Sưu tầm) . Đơn ca 2 (TTCH - Số 763).mp3", tags: ["Bình Yên"] },
+    { file: "Dhamma Sota (500 Miles - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 72).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Dừng Tâm Lang Thang (Lẻ Bóng - Sưu tầm) . Đơn ca (TTCH - Số 162).mp3", tags: ["Trữ Tình"] },
+    { file: "Đạo Làm Con (Nỗi Buồn Hoa Phượng - Sưu tầm) . Đơn ca (TTCH - Số 503).mp3", tags: ["Trữ Tình"] },
+    { file: "Đẹp Vì Biết Yêu (Biển Tình - Sưu tầm) . Đơn ca (TTCH - Số 489).mp3", tags: ["Trữ Tình"] },
+    { file: "Để Mình Luôn Yêu (Ko Tên 3 - Sưu tầm) . Đơn ca (TTCH - Số 215).mp3", tags: ["Trữ Tình"] },
+    { file: "Để Tâm An Trú (Để Cho Em Khóc - Sưu tầm) . Đơn ca (TTCH - Số 316).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Đoạn Đường Dài (Trời Vẫn Còn Xanh Em Vẫn Còn Anh - Sưu tầm) . Đơn ca (TTCH - Số 323).mp3", tags: ["Trữ Tình"] },
+    { file: "Đôi Bờ Tâm Tư (Đôi Bờ - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 94).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Đôi Bờ Tâm Tư (Đôi Bờ - Nhạc ngoại) . Đơn Ca Nam 2 (TTCH - Số 94).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Đôi Mắt Tuệ Giác (Đôi Mắt Tuệ Gíac - Sưu tầm) . Đơn ca (TTCH - Số 564).mp3", tags: ["Bình Yên"] },
+    { file: "Đời Đá Vàng (Đời Đá Vàng - Sưu tầm) . Đơn ca (TTCH - Số 375).mp3", tags: ["Trữ Tình"] },
+    { file: "Đừng Chờ Nữa (Tay Trái Chỉ Trăng - Nhạc Ngoại) . Đơn Ca Nữ (TTCH - Số 317).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "Đừng Chờ Nữa (Tay Trái Chỉ Trăng - Sưu tầm) . Đơn ca (TTCH - Số 317).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "Được An (Sợ Yêu - Sưu tầm) . Đơn ca (TTCH - Số 271).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Được An Vui (Đà Lạt Hoàng Hôn - Sưu tầm) . Đơn ca (TTCH - Số 690).mp3", tags: ["Trữ Tình"] },
+    { file: "Được Bình Tâm (Căn Nhà Dĩ Vãng - Sưu tầm) . Đơn ca (TTCH - Số 345).mp3", tags: ["Trữ Tình"] },
+    { file: "Được Nhiều Bình Yên (Chuyến Đò Không Em - Sưu tầm) . Đơn ca (TTCH - Số 533).mp3", tags: ["Trữ Tình"] },
+    { file: "Được Sống Được Biết (Cho Em Gần Anh Thêm Chút Nữa - Sưu tầm) . Đơn ca (TTCH - Số 409).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Đường Tu Ra Sao (Tuyết Lạnh - Sưu tầm) . Đơn ca (TTCH - Số 175).mp3", tags: ["Trữ Tình"] },
+    { file: "Em Biết Tu (Khi Xưa Ta Bé - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 57).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Em Quay Về (Mây Lang Thang - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 187).mp3", tags: ["Trữ Tình", "Nhạc Trẻ"] },
+    { file: "Em Quay Về (Mây Lang Thang - Sưu tầm) . Đơn ca (TTCH - Số 187).mp3", tags: ["Trữ Tình", "Nhạc Trẻ"] },
+    { file: "Giác Ngộ (My Heart Will Go On - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 16).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
+    { file: "Giác Nhanh Lên (Tuyết Rơi - Tombe La Neige - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 36).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
+    { file: "Giác Nhanh Lên (Tuyết Rơi - Tombe La Neige - Sưu tầm) . Đơn ca (TTCH - Số 36).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
+    { file: "Giác Tỉnh Nhàn (Say Tình - Sưu tầm) . Đơn ca (TTCH - Số 488).mp3", tags: ["Trữ Tình"] },
+    { file: "Giữ Tâm Mình (Xin Anh Giữ Trọn Tình Quê - Sưu tầm) . Đơn ca (TTCH - Số 102).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Giữa Thiên Nhiên Sáng (Không Tiếc Chi - Sưu tầm) . Đơn ca (TTCH - Số 292).mp3", tags: ["Trữ Tình"] },
+    { file: "Gõ Cửa Trái Tim (Gõ Cửa Trái Time - Sưu tầm) . Đơn ca (TTCH - Số 740).mp3", tags: ["Trữ Tình"] },
+    { file: "Hạnh Phúc (Hạ Trắng - Sưu tầm) . Đơn ca (TTCH - Số 496).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Hạnh Phúc Bình Dị (Childhood Memories - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 89).mp3", tags: ["Bình Yên", "Cổ Điển"] },
+    { file: "Hạnh Phúc Khi Chăm (Lệ Đá - Sưu tầm) . Đơn ca (TTCH - Số 498).mp3", tags: ["Trữ Tình"] },
+    { file: "Hạnh Phúc Trong Ta (Là Gì - Sưu tầm) . Đơn ca (TTCH - Số 561).mp3", tags: ["Trữ Tình"] },
+    { file: "Hạt Bụi Nhiệm Mầu (Cát Bụi - Sưu tầm) . Đơn ca (TTCH - Số 559).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Hãy Thương Yêu Nhau (Hãy Yêu Nhau Đi - Sưu tầm) . Đơn ca (TTCH - Số 548).mp3", tags: ["Bình Yên", "Tích Cực"] },
+    { file: "Hãy Yêu (Phố Đêm - Sưu tầm) . Đơn ca (TTCH - Số 77).mp3", tags: ["Trữ Tình"] },
+    { file: "Hiểu Được Chính Mình (Hái Hoa Rừng Cho Em - Sưu tầm) . Đơn ca (TTCH - Số 159).mp3", tags: ["Trữ Tình"] },
+    { file: "Hiểu Thấu Được Ta (Biết Nói Gì Đây - Sưu tầm) . Đơn ca (TTCH - Số 200).mp3", tags: ["Trữ Tình"] },
+    { file: "Hiểu Và Thương (Hiểu Và Thương - Sưu tầm) . Đơn ca (TTCH - Số 33).mp3", tags: ["Bình Yên", "Tích Cực"] },
+    { file: "Hòa Chung Niềm Vui (Colors Of The Wind - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 457).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Hoà Sống Xuân New (Triệu Rose - Sưu tầm) . Đơn ca (TTCH - Số 744).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Hòa Xuân Cùng Nhau (Mùa Xuân Đầu Tiên - Sưu tầm) . Đơn ca (TTCH - Số 710).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Hòa Xuân Sống (Triệu Rose - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 744).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Học Cách Lắng Nghe (Búp Bê Không Tình Yêu (Poupeé De Cire, De Son) - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 786).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Học Cách Lắng Nghe (Búp Bê Ko Tình Yêu - Sưu tầm) . Đơn ca (TTCH - Số 786).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Hướng Tu Đúng (Lối Về Đất Mẹ - Sưu tầm) . Đơn ca (TTCH - Số 103).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Khiem Nhuong (Em Đẹp Như Mơ - Sưu tầm) . Đơn ca (TTCH - Số 783).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Khiêm Nhường (Em Đẹp Như Mơ (Elle Était Si Jolie) - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 783).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Khỏe An Mà Sống (Muộn Màng Là Từ Lúc - Sưu tầm) . Đơn ca (TTCH - Số 318).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Khoẻ Vui Lạc An- (Nỗi Buồn Châu Pha - Sưu tầm) . Đơn ca (TTCH - Số 242).mp3", tags: ["Trữ Tình"] },
+    { file: "Không Ngăn Cách (Người Tình Mùa Đông - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 104).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Không Nhụt Chí (Hàn Mặc Tử - Sưu tầm) . Đơn ca (TTCH - Số 120).mp3", tags: ["Trữ Tình"] },
+    { file: "Khuyến Tu (Thu Ca - Sưu tầm) . Đơn ca (TTCH - Số 577).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "La Chanson D’Orphee (Bài Ngợi Ca Tình Yêu - Nhạc ngoại) . Song Ca Nam Nữ (TTCH - Số 798).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
+    { file: "Le Tems De L'Amour - Ngồi Bình Yên (Mùa Tình Yêu - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 807).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Lòng Mãi Còn Xuân (Người Ở Lại Charlie - Sưu tầm) . Đơn ca (TTCH - Số 743).mp3", tags: ["Trữ Tình"] },
+    { file: "Lời Nhắn Nhủ (Niệm Khúc Cuối - Sưu tầm) . Đơn ca (TTCH - Số 376).mp3", tags: ["Trữ Tình"] },
+    { file: "Luôn Trở Vô Trong (Tôi Vẫn Cô Đơn - Sưu tầm) . Đơn ca (TTCH - Số 335).mp3", tags: ["Trữ Tình"] },
+    { file: "Luyện Tâm Hoa (Hoa Trinh Nữ - Sưu tầm) . Đơn ca (TTCH - Số 121).mp3", tags: ["Trữ Tình"] },
+    { file: "Mãi Còn Đậm Sâu (Mưa Chiều Miền Trung - Sưu tầm) . Đơn ca (TTCH - Số 692).mp3", tags: ["Trữ Tình"] },
+    { file: "Mãi Đậm Tình Thương (Đừng Nói Xa Nhau - Sưu tầm) . Đơn ca (TTCH - Số 537).mp3", tags: ["Trữ Tình"] },
+    { file: "Mãi Được Yêu (Độ Ta Không Độ Nàng - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 680).mp3", tags: ["Nhạc Trẻ"] },
+    { file: "Mãi Xuân Trong Tâm (Để Quên Con Tim - Sưu tầm) . Đơn ca (TTCH - Số 716).mp3", tags: ["Trữ Tình"] },
+    { file: "Maman Oh Maman-Về Lại Nguồn Tâm Sáng (Người Mẹ Hiền Yêu Dấu - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 794).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Mẹ Hiền (Kiếp Nghèo - Sưu tầm) . Đơn ca (TTCH - Số 525).mp3", tags: ["Trữ Tình"] },
+    { file: "Mình Phải Già (Rồi Cũng Già - Sưu tầm) . Đơn ca (TTCH - Số 343).mp3", tags: ["Trữ Tình"] },
+    { file: "Mọi Loài An Ổn (Lưu Bút Ngày Xanh - Sưu tầm) . Đơn ca (TTCH - Số 160).mp3", tags: ["Trữ Tình"] },
+    { file: "Một Lần Buông Cho Hết (Một Ngày Tôi Quên Hết - Sưu tầm) . Đơn ca (TTCH - Số 192).mp3", tags: ["Trữ Tình"] },
+    { file: "Một Ngày Quyết Tâm (Mùa Thu Lá Bay - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 158).mp3", tags: ["Trữ Tình"] },
+    { file: "Một Ngày Quyết Tâm (Mùa Thu Lá Bay - Sưu tầm) . Đơn ca (TTCH - Số 158).mp3", tags: ["Trữ Tình"] },
+    { file: "Mở Rộng Trái Tim (Gõ Cửa Trái Tim - Sưu tầm) . Đơn ca (TTCH - Số 553).mp3", tags: ["Trữ Tình"] },
+    { file: "Mùa Hè Như Xuân (Mùa Hè Tuyết Rơi - Sưu tầm) . Đơn ca (TTCH - Số 797).mp3", tags: ["Trữ Tình", "Nhạc Trẻ"] },
+    { file: "Mùa Hè Như Xuân (Mùa Hè Tuyết Rơi - Sưu tầm) . Đơn ca 2 (TTCH - Số 797).mp3", tags: ["Trữ Tình", "Nhạc Trẻ"] },
+    { file: "Mùa Xuân Trong Mình (Những Tâm Hồn Cô Đơn - Sưu tầm) . Đơn ca (TTCH - Số 717).mp3", tags: ["Trữ Tình"] },
+    { file: "Muốn -Biết - Sống (Tự Nguyện - Sưu tầm) . Đơn ca (TTCH - Số 557).mp3", tags: ["Tích Cực"] },
+    { file: "Muốn Biết Mình (Nhắn Rằng Anh Nhớ Em - Sưu tầm) . Đơn ca (TTCH - Số 170).mp3", tags: ["Trữ Tình"] },
+    { file: "Muốn Được Người Yêu (Lại Nhớ Người Yêu - Sưu tầm) . Đơn ca (TTCH - Số 138).mp3", tags: ["Trữ Tình"] },
+    { file: "Muôn Nơi Hoà Bình (Xin Còn Gọi Tên Nhau - Sưu tầm) . Đơn ca (TTCH - Số 490).mp3", tags: ["Trữ Tình"] },
+    { file: "Mười Điều Quý (Lời Thiên Thu Gọi - Sưu tầm) . Đơn ca (TTCH - Số 724).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Mười Điều Quý (Lời Thiên Thu Gọi - Sưu tầm) . Đơn ca 2 (TTCH - Số 724).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Myra) (Toả Từ Tâm (Hiểu Và Thương - Sưu tầm) . Đơn ca (TTCH - Số 139).mp3", tags: ["Bình Yên", "Tích Cực"] },
+    { file: "Nàng Gia Lai (Chàng Là Ai - Sưu tầm) . Đơn ca (TTCH - Số 732).mp3", tags: ["Trữ Tình"] },
+    { file: "Nên Bình Tĩnh (Giờ Đã Không Còn Nữa - Sưu tầm) . Đơn ca (TTCH - Số 534).mp3", tags: ["Trữ Tình"] },
+    { file: "Nên Rõ Biết (Tình Thư Của Lính - Sưu tầm) . Đơn ca (TTCH - Số 741).mp3", tags: ["Trữ Tình"] },
+    { file: "Nếu Ai Có Hỏi (Nếu Ai Có Hỏi - Sưu tầm) . Đơn ca (TTCH - Số 124).mp3", tags: ["Trữ Tình"] },
+    { file: "Ngay Đây Bây Giờ (Donna Donna - Sưu tầm) . Đơn ca (TTCH - Số 711).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "Ngay Đây Thôi (It's Now Or Never - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 85).mp3", tags: ["Cổ Điển", "Trữ Tình", "Bình Yên"] },
+    { file: "Ngày Em Đến (Ngày Em Đến - Sưu tầm) . Song Ca (TTCH - Số 809).mp3", tags: ["Trữ Tình"] },
+    { file: "Ngày Xuân Xin Chúc (Đầu Xuân Lính Chúc - Sưu tầm) . Đơn ca (TTCH - Số 487).mp3", tags: ["Tích Cực"] },
+    { file: "Nghệ Thuật Sống (Để Gió Cuốn Đi - Sưu tầm) . Đơn ca (TTCH - Số 551).mp3", tags: ["Bình Yên", "Tích Cực"] },
+    { file: "Ngồi Bình Yên (Bên Đời Hiu Quạnh - Sưu tầm) . Đơn ca (TTCH - Số 560).mp3", tags: ["Trữ Tình"] },
+    { file: "Ngồi Bình Yên (Ngồi Bình Yên - Sưu tầm) . Song Ca (TTCH - Số 807).mp3", tags: ["Bình Yên"] },
+    { file: "Ngồi Bình Yên Tuyệt Vời (Chuyện Tình Yêu - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 44).mp3", tags: ["Trữ Tình", "Tích Cực"] },
+    { file: "Ngồi Bình Yên Tuyệt Vời (Chuyện Tình Yêu - Nhạc ngoại) . Đơn Ca Nữ 2 (TTCH - Số 44).mp3", tags: ["Trữ Tình", "Tích Cực"] },
+    { file: "Ngồi Bình Yên Tuyệt Vời (Chuyện Tình Yêu - Sưu tầm) . Đơn ca (TTCH - Số 44).mp3", tags: ["Trữ Tình", "Tích Cực"] },
+    { file: "Ngồi Bình Yên Tuyệt Vời (Chuyện Tình Yêu - Sưu tầm) . Đơn ca 2 (TTCH - Số 44).mp3", tags: ["Trữ Tình", "Tích Cực"] },
+    { file: "Ngồi Bình Yên Tuyệt Vời (Chuyện Tình Yêu - Sưu tầm) . Đơn ca 3 (TTCH - Số 44).mp3", tags: ["Trữ Tình", "Tích Cực"] },
+    { file: "Ngồi Bình Yên Tuyệt Vời (Chuyện Tình Yêu - Sưu tầm) . Đơn ca 4 (TTCH - Số 44).mp3", tags: ["Trữ Tình", "Tích Cực"] },
+    { file: "Ngôi Nhà Chung (Chờ Đông - Sưu tầm) . Đơn ca (TTCH - Số 193).mp3", tags: ["Trữ Tình"] },
+    { file: "Ngồi Yên Hiểu Tâm (Hoa Bằng Lăng - Sưu tầm) . Đơn ca (TTCH - Số 340).mp3", tags: ["Trữ Tình"] },
+    { file: "Nguồn Tâm Thành (Biển Mặn - Sưu tầm) . Đơn ca (TTCH - Số 113).mp3", tags: ["Trữ Tình"] },
+    { file: "Nguyện Sống (Tự Nguyện - Sưu tầm) . Đơn ca (TTCH - Số 547).mp3", tags: ["Tích Cực"] },
+    { file: "Người Biết Yêu (Gửi Về Anh - Sưu tầm) . Đơn ca (TTCH - Số 538).mp3", tags: ["Trữ Tình"] },
+    { file: "Người Hay Mơ (Thà Như Giọt Mưa - Sưu tầm) . Đơn ca (TTCH - Số 373).mp3", tags: ["Trữ Tình"] },
+    { file: "Người Thương Ơi (Ko Tên Cuối - Sưu tầm) . Đơn ca (TTCH - Số 374).mp3", tags: ["Trữ Tình"] },
+    { file: "Nhắn Nhủ (Cát Bụi - Sưu tầm) . Đơn ca (TTCH - Số 558).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Nhiều Sức Sống (Dòng Sông Tuổi Nhỏ - Sưu tầm) . Song Ca (TTCH - Số 790).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Nhớ Ngồi Bình Yên (Em Đẹp Như Mơ - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 43).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Nhớ Trở Về Tâm (Những Đồi Hoa Sim - Sưu tầm) . Đơn ca (TTCH - Số 615).mp3", tags: ["Trữ Tình"] },
+    { file: "Nhớ Về (Ước Gì - Sưu tầm) . Đơn ca (TTCH - Số 727).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Nhớ Về Người (Đau Thương Chỉ Vì Em - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 590).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Những Nụ Tình Xanh (Những Nụ Tình Xanh - Sưu tầm) . Đơn ca (TTCH - Số 799).mp3", tags: ["Trữ Tình"] },
+    { file: "Những Nụ Tình Xanh (Tous Les Garcons Et Les Filles) (Những Nụ Tình Xanh (Tous Les Garcons Et Les Filles) - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 799).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Niềm Hạnh Phúc (Rừng Xưa - Sưu tầm) . Đơn ca (TTCH - Số 301).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Niềm Tin Sâu (Hello - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 84).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
+    { file: "Nổi Gió Lên (Nối Gió Rồi - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 414).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Nue Comme La Mer- Mùa Hè Như Xuân (Mùa Hè Tuyết Rơi - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 797).mp3", tags: ["Trữ Tình", "Nhạc Trẻ"] },
+    { file: "Nue Comme La Mer- Mùa Hè Như Xuân (Mùa Hè Tuyết Rơi - Nhạc ngoại) . Đơn Ca Nữ 2 (TTCH - Số 797).mp3", tags: ["Trữ Tình", "Nhạc Trẻ"] },
+    { file: "Oh! Mon Amour (Tình Yêu Ôi Tình Yêu - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 804).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Oh! Mon Amour (Tình Yêu Ôi Tình Yêu - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 804).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Phủ Đầy Yêu Thương (Tuổi Đời Mênh Mông - Sưu tầm) . Đơn ca (TTCH - Số 504).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Phước Duyên (Nó Và Tôi - Sưu tầm) . Đơn ca (TTCH - Số 140).mp3", tags: ["Trữ Tình"] },
+    { file: "Quay Trở Về Đây (Tâm Sự Người Hát Bài Quê Hương - Sưu tầm) . Đơn ca (TTCH - Số 254).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Quay Trở Về Tâm (Xin Gọi Nhau Là Cố Nhân - Sưu tầm) . Đơn ca (TTCH - Số 528).mp3", tags: ["Trữ Tình"] },
+    { file: "Quay Về (Chiều Matxcova - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 41).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Quay Về (Chiều Matxcova - Sưu tầm) . Đơn ca (TTCH - Số 41).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Quay Về Đây (Cây Thuỳ Dương - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 785).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Quay Về Đây (Cây Thuỳ Dương - Sưu tầm) . Đơn ca (TTCH - Số 785).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Quay Về Lại Tâm (Trăng Tàn Trên Hè Phố- - Sưu tầm) . Đơn ca (TTCH - Số 515).mp3", tags: ["Trữ Tình"] },
+    { file: "Quay Về Trân Quý (Vũ Nữ Thân Gầy - Sưu tầm) . Đơn ca (TTCH - Số 784).mp3", tags: ["Trữ Tình"] },
+    { file: "Quay Về Trân Quý (Vũ Nữ Thân Gầy (La Cumparsa) - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 784).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "Quay Về Với Nhau (Bên Bếp Lửa Hồng - Sưu tầm) . Đơn ca (TTCH - Số 570).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Quân Bình (Cho Vừa Lòng Em - Sưu tầm) . Đơn ca (TTCH - Số 197).mp3", tags: ["Trữ Tình"] },
+    { file: "Quyết Dừng (Tiếc Thương (Donna Donna) - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 229).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
+    { file: "Quyết Tâm Bền Chí (Duyên Kiếp - Sưu tầm) . Đơn ca (TTCH - Số 378).mp3", tags: ["Trữ Tình"] },
+    { file: "Quyết Tâm Tu (Mùa Thu Chết - Sưu tầm) . Đơn ca (TTCH - Số 337).mp3", tags: ["Trữ Tình"] },
+    { file: "Quyết Về Thôi (Nhớ Người Yêu - Sưu tầm) . Đơn ca (TTCH - Số 705).mp3", tags: ["Trữ Tình"] },
+    { file: "Sáng Tâm (Ánh Trăng Nói Hộ Lòng Tôi - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 781).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Sáng Tâm (Ánh Trăng Nói Hộ Lòng Tôi - Sưu tầm) . Đơn ca (TTCH - Số 781).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Sans Elle- Biết Chính Mình (Nếu Vắng Nàng - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 803).mp3", tags: ["Trữ Tình"] },
+    { file: "Sao Quá Tuyệt Luôn (Tơ Tằm - Sưu tầm) . Đơn ca (TTCH - Số 319).mp3", tags: ["Trữ Tình"] },
+    { file: "Sẽ Quyết Phấn Đấu (Đường Xưa - Sưu tầm) . Đơn ca (TTCH - Số 252).mp3", tags: ["Trữ Tình"] },
+    { file: "Soi Sáng Tâm Ta (Tình Anh - Sưu tầm) . Đơn ca (TTCH - Số 309).mp3", tags: ["Trữ Tình"] },
+    { file: "Sống Chung An Hòa (Right Here Waiting - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 451).mp3", tags: ["Trữ Tình", "Cổ Điển"] },
+    { file: "Sống Cùng Nàng Xuân (Gió Về Miền Xuôi - Sưu tầm) . Đơn ca (TTCH - Số 736).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Sống Đẹp Muôn Nơi (Thương Về Miền Đất Lạnh - Sưu tầm) . Đơn ca (TTCH - Số 691).mp3", tags: ["Trữ Tình"] },
+    { file: "Sống Đẹp Sống Lâu (Biết Mẹ Muốn Dâu - Sưu tầm) . Đơn ca (TTCH - Số 694).mp3", tags: ["Trữ Tình"] },
+    { file: "Sống Hoà Thiên Nhiên (Mưa Chiều - Sưu tầm) . Đơn ca (TTCH - Số 344).mp3", tags: ["Trữ Tình"] },
+    { file: "Sống Khoẻ Thuận Tự Nhiên (Sống Khoẻ Thuận Tự Nhiên - Sưu tầm) . Đơn ca (TTCH - Số 735).mp3", tags: ["Bình Yên", "Tích Cực"] },
+    { file: "Sống Khỏe Thuận Tự Nhiên (Sống Khỏe Thuận Tự Nhiên - Sưu tầm) . Đơn ca (TTCH - Số 735).mp3", tags: ["Bình Yên", "Tích Cực"] },
+    { file: "Sống Khoẻ Thuận Tự Nhiên (Sống Khoẻ Thuận Tự Nhiên - Sưu tầm) . Đơn ca 2 (TTCH - Số 735).mp3", tags: ["Bình Yên", "Tích Cực"] },
+    { file: "Sống Mãi Hoà Bình (Nhớ Nhau Hoài - Sưu tầm) . Đơn ca (TTCH - Số 302).mp3", tags: ["Trữ Tình"] },
+    { file: "Sống Nhàn (The Sound Of Silence - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 433).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Sống Nhàn (The Sound Of Silence - Sưu tầm) . Đơn ca (TTCH - Số 433).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Sống Thái Bình (Ko Tên 4 - Sưu tầm) . Đơn ca (TTCH - Số 216).mp3", tags: ["Trữ Tình"] },
+    { file: "Sống Thanh Bình (Kiếp Cầm Ca - Sưu tầm) . Đơn ca (TTCH - Số 258).mp3", tags: ["Trữ Tình"] },
+    { file: "Sống Thanh Lương (Sealed W A Kiss - Sưu tầm) . Đơn ca (TTCH - Số 437).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "Sống Xuân (Nắng Xuân - Sưu tầm) . Đơn ca (TTCH - Số 782).mp3", tags: ["Tích Cực"] },
+    { file: "Sống Xuân (Nắng Xuân (Solenzara) - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 782).mp3", tags: ["Tích Cực", "Trữ Tình"] },
+    { file: "Sống Xứng Đáng (Trăng Dưới Chân Mình - Sưu tầm) . Đơn ca (TTCH - Số 312).mp3", tags: ["Trữ Tình"] },
+    { file: "Suy Ngẫm (Tình Xa - Sưu tầm) . Đơn ca (TTCH - Số 22).mp3", tags: ["Trữ Tình"] },
+    { file: "Sức Sống Dâng Tràn (Gõ Cửa - Sưu tầm) . Đơn ca (TTCH - Số 161).mp3", tags: ["Trữ Tình"] },
+    { file: "Ta Chung Vui (APT - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 179).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Ta Cùng Nhau Hạnh Phúc (Shalala Lala - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 465).mp3", tags: ["Tích Cực", "Nhạc Trẻ"] },
+    { file: "Ta Đến Với Nhau (Như Đã Dấu Yêu - Sưu tầm) . Đơn ca (TTCH - Số 702).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Tại Sao (Còn Tuổi Nào Cho Em - Sưu tầm) . Đơn ca (TTCH - Số 574).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Tái Sinh Cõi Sáng (Tái Sinh - Sưu tầm) . Đơn ca (TTCH - Số 95).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Tám Pháp Luyện Tâm (Tám Pháp Luyện Tâm - Sưu tầm) . Đơn ca (TTCH - Số 582).mp3", tags: ["Bình Yên"] },
+    { file: "Tâm Chiếu Sáng Xuân (Một Người Đi - Sưu tầm) . Đơn ca (TTCH - Số 718).mp3", tags: ["Trữ Tình"] },
+    { file: "Tâm Được An (Thôi Kệ Đi - Sưu tầm) . Đơn ca (TTCH - Số 726).mp3", tags: ["Trữ Tình"] },
+    { file: "Tâm Được An (Thôi Kệ Đi - Sưu tầm) . Đơn ca 2 (TTCH - Số 726).mp3", tags: ["Trữ Tình"] },
+    { file: "Tâm Được An (Thôi Kệ Đi - Sưu tầm) . Đơn ca 3 (TTCH - Số 726).mp3", tags: ["Trữ Tình"] },
+    { file: "Tâm Giác (Green Fields - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 6).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Tâm Giác (Green Fields - Nhạc ngoại) . Đơn Ca Nữ 2 (TTCH - Số 6).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Tâm Giác (Green Fields - Sưu tầm) . Đơn ca (TTCH - Số 06).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Tâm Nguyện (Over And Over - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 15).mp3", tags: ["Cổ Điển", "Tích Cực"] },
+    { file: "Tâm Phải Nên Xả Ly (Em Vẫn Ko Đổi Thay - Sưu tầm) . Đơn ca (TTCH - Số 789).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Tâm Sáng Soi (Rừng Lá Thấp - Sưu tầm) . Đơn ca (TTCH - Số 502).mp3", tags: ["Trữ Tình"] },
+    { file: "Tâm Sự Yashodhara (Nhớ Người Yêu - Sưu tầm) . Đơn ca (TTCH - Số 703).mp3", tags: ["Trữ Tình"] },
+    { file: "Tập Trung Cần Nhé (Bậu Ơi Đừng Khóc - Sưu tầm) . Đơn ca (TTCH - Số 685).mp3", tags: ["Trữ Tình"] },
+    { file: "Thanh Lọc Thân Tâm (Thanh Lọc Thân Tâm - Sưu tầm) . Đơn ca (TTCH - Số 000).MP3", tags: ["Bình Yên"] },
+    { file: "Thanh Lương Thong Dong (Bài Tango Cho Em - Sưu tầm) . Đơn ca (TTCH - Số 359).mp3", tags: ["Trữ Tình"] },
+    { file: "Thắp Sáng Niềm Tin (Bản Tình Ca Đơn Côi - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 594).mp3", tags: ["Tích Cực", "Trữ Tình", "Nhạc Trẻ"] },
+    { file: "Thân Tâm (Đôi Dép - Sưu tầm) . Đơn ca (TTCH - Số 695).mp3", tags: ["Trữ Tình"] },
+    { file: "Thân Tâm Khỏe Vui (Đời Có Bao Nhiêu Ngày Vui - Sưu tầm) . Đơn ca (TTCH - Số 707).mp3", tags: ["Trữ Tình"] },
+    { file: "Thân Tâm Trong Nhau (Thôi Ta Xa Nhau - Sưu tầm) . Đơn ca (TTCH - Số 796).mp3", tags: ["Trữ Tình"] },
+    { file: "Thân Thương Lâu Rồi (Mùa Hoa Anh Đào - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 211).mp3", tags: ["Trữ Tình"] },
+    { file: "Thầy Mãi Quan Tâm (Tình Vẫn Chưa Yên - Sưu tầm) . Đơn ca (TTCH - Số 739).mp3", tags: ["Trữ Tình"] },
+    { file: "Thầy Trong Ta (Tình Bơ Vơ - Sưu tầm) . Đơn ca (TTCH - Số 612).mp3", tags: ["Trữ Tình"] },
+    { file: "Thế Sự (Thế Sự - Sưu tầm) . Đơn ca (TTCH - Số 688).mp3", tags: ["Trữ Tình"] },
+    { file: "Thiên Nhiên Bao Dung (Nụ Hồng Mong Manh - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 181).mp3", tags: ["Trữ Tình", "Nhạc Trẻ"] },
+    { file: "Thiên Nhiên Hoà Sống (Lâu Đài Tình Ái - Sưu tầm) . Đơn ca (TTCH - Số 500).mp3", tags: ["Trữ Tình"] },
+    { file: "Thiên Sứ Tình Thân (Yêu Em Dài Lâu - Sưu tầm) . Đơn ca (TTCH - Số 745).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Thiên Sứ Tình Thân (Yêu Em Dài Lâu - Sưu tầm) . Đơn ca 2 (TTCH - Số 745).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Thoát Ra Muộn Phiền (Trái Tim Ngục Tù - Sưu tầm) . Đơn ca (TTCH - Số 225).mp3", tags: ["Trữ Tình"] },
+    { file: "Thoát Ra Muộn Phiền (Trái Tim Ngục Tù - Sưu tầm) . Đơn ca 2 (TTCH - Số 225).mp3", tags: ["Trữ Tình"] },
+    { file: "Thở Cho Yên (Fly Me To The Moon - Sưu tầm) . Đơn ca (TTCH - Số 596).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "Thực Hành Âm Thầm (Duyên Quê - Sưu tầm) . Đơn ca (TTCH - Số 307).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Thực Hành Buông Đi (Nhạt Nhòa Mưa Đêm - Sưu tầm) . Đơn ca (TTCH - Số 709).mp3", tags: ["Trữ Tình"] },
+    { file: "Thực Hành Tốt Hơn (Cuộc Tình Trong Cơn Mưa - Sưu tầm) . Đơn ca (TTCH - Số 592).mp3", tags: ["Trữ Tình"] },
+    { file: "Thực Hành Yêu Thương (Một Đời Yêu Anh - Sưu tầm) . Đơn ca (TTCH - Số 738).mp3", tags: ["Trữ Tình"] },
+    { file: "Thực Tập Tĩnh Tâm (Một Triệu Khả Năng - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 411).mp3", tags: ["Nhạc Trẻ", "Bình Yên"] },
+    { file: "Thực Tu Đi Em (Nhớ Nhau Hoài - Sưu tầm) . Đơn ca (TTCH - Số 303).mp3", tags: ["Trữ Tình"] },
+    { file: "Tìm Đâu Ở Xa (Ko Tên 6 - Sưu tầm) . Đơn ca (TTCH - Số 218).mp3", tags: ["Trữ Tình"] },
+    { file: "Tình …Yêu … Mình … (Tình - Sưu tầm) . Đơn ca (TTCH - Số 233).mp3", tags: ["Trữ Tình"] },
+    { file: "Tình Bao La (Trở Về Mái Nhà Xưa - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 83).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Tình Cha Mẹ (Tuyết Trắng - Sưu tầm) . Đơn ca (TTCH - Số 539).mp3", tags: ["Trữ Tình"] },
+    { file: "Tình Còn Hoài (Lời Tình Buồn - Sưu tầm) . Đơn ca (TTCH - Số 706).mp3", tags: ["Trữ Tình"] },
+    { file: "Tình Đẹp (Tình Đẹp - Sưu tầm) . Đơn ca (TTCH - Số 795).mp3", tags: ["Trữ Tình"] },
+    { file: "Tĩnh Giác Phải Nhớ (Chàng Là Ai - Sưu tầm) . Đơn ca (TTCH - Số 719).mp3", tags: ["Trữ Tình"] },
+    { file: "Tỉnh Giác Sớm Buông (Chiều Nghe Biển Khóc - Sưu tầm) . Đơn ca (TTCH - Số 341).mp3", tags: ["Trữ Tình"] },
+    { file: "Tình Mãi Chất Ngất (Casablanca - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 435).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "Tình Mãi Chất Ngất (Casalanca - Sưu tầm) . Đơn ca (TTCH - Số 435).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "Tình Mẹ (Chiều Hạ Vàng - Sưu tầm) . Đơn ca (TTCH - Số 524).mp3", tags: ["Trữ Tình"] },
+    { file: "Tỉnh Ngộ (Đãi Ngộ - Sưu tầm) . Đơn ca (TTCH - Số 689).mp3", tags: ["Trữ Tình"] },
+    { file: "Tình Thương Trao Nhau (Gần Nhau - Sưu tầm) . Đơn ca (TTCH - Số 549).mp3", tags: ["Trữ Tình"] },
+    { file: "Tình Yêu Lớn (Mưa Rừng - Sưu tầm) . Đơn ca (TTCH - Số 78).mp3", tags: ["Trữ Tình"] },
+    { file: "Tình Yêu Muôn Đời (Tình Yêu Muôn Đời - Sưu tầm) . Song Ca (TTCH - Số 802).mp3", tags: ["Trữ Tình"] },
+    { file: "Tình Yêu Quần Sanh (Khói Thuốc Đợi Chờ - Sưu tầm) . Đơn ca (TTCH - Số 339).mp3", tags: ["Trữ Tình"] },
+    { file: "Tình Yêu! Ôi Tình Yêu (Oh! Mon Amour - Sưu tầm) . Đơn ca (TTCH - Số 804).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "Tình Yêu! Ôi Tình Yêu (Oh! Mon Amour - Sưu tầm) . Đơn ca 2 (TTCH - Số 804).mp3", tags: ["Cổ Điển", "Trữ Tình"] },
+    { file: "Tôi Yêu (Tôi Yêu - Sưu tầm) . Đơn ca (TTCH - Số 673).mp3", tags: ["Trữ Tình"] },
+    { file: "Trái Tim Cho Đời (Trời Còn Mưa Mãi - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 591).mp3", tags: ["Trữ Tình"] },
+    { file: "Trái Tim Cho Đời (Trời Còn Mưa Mãi - Sưu tầm) . Đơn ca (TTCH - Số 591).mp3", tags: ["Trữ Tình"] },
+    { file: "Trên Đồi Vắng (Triệu Hoa Hồng - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 8).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Trọn Vẹn Niềm Vui (Mỗi Ngày Chọn Niềm Vui - Sưu tầm) . Đơn ca (TTCH - Số 550).mp3", tags: ["Tích Cực"] },
+    { file: "Trồng Rừng (Yesterday - Sưu tầm) . Đơn ca (TTCH - Số 431).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Trở Về Cát Bụi (Trở Về Cát Bụi - Sưu tầm) . Đơn ca (TTCH - Số 562).mp3", tags: ["Trữ Tình"] },
+    { file: "Trở Về Chơn Tâm (Trả Lại Em Yêu - Sưu tầm) . Đơn ca (TTCH - Số 492).mp3", tags: ["Trữ Tình"] },
+    { file: "Trở Về Minh Tinh ! (Diễm Xưa - Đại Minh Tinh - Sưu tầm) . Đơn ca (TTCH - Số 174).mp3", tags: ["Trữ Tình"] },
+    { file: "Trở Về Minh Tinh ! (Diễm Xưa - Đại Minh Tinh - Sưu tầm) . Đơn ca 2 (TTCH - Số 174).mp3", tags: ["Trữ Tình"] },
+    { file: "Trở Về Quê Hương (Xin Chào Việt Nam - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 96).mp3", tags: ["Tích Cực", "Bình Yên"] },
+    { file: "Trở Về Quê Hương (Xin Chào Việt Nam - Nhạc ngoại) . Đơn Ca Nữ 2 (TTCH - Số 96).mp3", tags: ["Tích Cực", "Bình Yên"] },
+    { file: "Trở Về Yêu Ta (Một Đêm Say - Sưu tầm) . Đơn ca (TTCH - Số 191).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Trở Vô Tâm Xuân (Và Tôi Cũng Yêu Em - Sưu tầm) . Đơn ca (TTCH - Số 723).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Tu Chung Vui Nha (Tu Chung Vui Nha - Sưu tầm) . Đơn ca (TTCH - Số 773).mp3", tags: ["Tích Cực"] },
+    { file: "Tu Ra Sao (Nỗi Buồn Đêm Mưa - Sưu tầm) . Đơn ca (TTCH - Số 118).mp3", tags: ["Trữ Tình"] },
+    { file: "Tu Thì An (Tuổi Mộng Mơ - Sưu tầm) . Đơn ca (TTCH - Số 729).mp3", tags: ["Trữ Tình"] },
+    { file: "Tu Trong Đời (Gọi Tên 4 Mùa - Sưu tầm) . Đơn ca (TTCH - Số 19).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Từ Tâm Chiếu Hoài (Những Lời Mê Hoặc - Sưu tầm) . Đơn ca (TTCH - Số 792).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Từ Tâm Chiếu Hoài- (Paroles Paroles) (Những Lời Mê Hoặc - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 792).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Tự Thuở Nào (Như Đã Dấu Yêu - Sưu tầm) . Song Ca (TTCH - Số 346).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Từng Giờ Trở Về (Thao Thức Vì Anh - Sưu tầm) . Đơn ca (TTCH - Số 199).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Và Con Tim Đã Vui Trở Lại (Và Con Tim Đã Vui Trở Lại - Sưu tầm) . Đơn ca (TTCH - Số 713).mp3", tags: ["Tích Cực"] },
+    { file: "Và Con Tim Đã Vui Trở Lại (Và Con Tim Đã Vui Trở Lại - Sưu tầm) . Đơn ca 2 (TTCH - Số 713).mp3", tags: ["Tích Cực"] },
+    { file: "Vẫn Đượm Sắc Xuân (Mặt Trời Bé Con - Sưu tầm) . Đơn ca (TTCH - Số 722).mp3", tags: ["Tích Cực"] },
+    { file: "Vẹn Nguyên (Cũng Một Chữ Tình - Sưu tầm) . Đơn ca (TTCH - Số 535).mp3", tags: ["Trữ Tình"] },
+    { file: "Về … (Ko Tên 2 - Sưu tầm) . Đơn ca (TTCH - Số 214).mp3", tags: ["Trữ Tình"] },
+    { file: "Về Chốn An (CăN Nhà Dĩ Vãng - Sưu tầm) . Đơn ca (TTCH - Số 693).mp3", tags: ["Trữ Tình"] },
+    { file: "Về Cùng Thiên Nhiên (Đưa Em Vào Hạ - Sưu tầm) . Đơn ca (TTCH - Số 530).mp3", tags: ["Trữ Tình"] },
+    { file: "Về Đây (Biển Nhớ - Sưu tầm) . Đơn ca (TTCH - Số 497).mp3", tags: ["Trữ Tình"] },
+    { file: "Về Đây Cùng Nhau (Giấc Mơ Cánh Cò - Sưu tầm) . Đơn ca (TTCH - Số 308).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Về Đây Ngay Nhé (Un-Break My Heart - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 469).mp3", tags: ["Trữ Tình"] },
+    { file: "Về Đây Nghe Em (Về Đây Nghe Em - Sưu tầm) . Đơn ca (TTCH - Số 715).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Về Đây Thôi (Trở Về Mái Nhà Xưa - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 578).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Về Đây Thôi (Trở Về Mái Nhà Xưa - Nhạc ngoại) . Song Ca Nam Nữ (TTCH - Số 578).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Về Đây Thôi (Trở Về Mái Nhà Xưa - Sưu tầm) . Đơn ca (TTCH - Số 578).mp3", tags: ["Cổ Điển", "Bình Yên"] },
+    { file: "Về Lại Nguồn Tâm Sáng (Người Mẹ Hiền Yêu Dấu - Sưu tầm) . Đơn ca (TTCH - Số 794).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Về Ngay Em Nhé (Tình Đẹp Mùa Chôm Chôm - Sưu tầm) . Đơn ca (TTCH - Số 189).mp3", tags: ["Trữ Tình"] },
+    { file: "Về Nguồn Tâm (Lối Về Đất Mẹ - Sưu tầm) . Đơn ca (TTCH - Số 787).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Về Tìm Trong Đó (Ko Tên 7 - Sưu tầm) . Đơn ca (TTCH - Số 219).mp3", tags: ["Trữ Tình"] },
+    { file: "Về Với Mình (Thành Phố Buồn - Sưu tầm) . Đơn ca (TTCH - Số 529).mp3", tags: ["Trữ Tình"] },
+    { file: "Về Với Thiên Nhiên (Tinh Ca Du Mục - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 39).mp3", tags: ["Tích Cực"] },
+    { file: "Về Với Thiên Nhiên (Tinh Ca Du Mục - Sưu tầm) . Đơn ca (TTCH - Số 39).mp3", tags: ["Tích Cực"] },
+    { file: "Về Với Thiên Nhiên (Tinh Ca Du Mục - Sưu tầm) . Đơn ca 2 (TTCH - Số 39).mp3", tags: ["Tích Cực"] },
+    { file: "Viens M’Embrasser - Yêu Thiên Nhiên (Lại Gần Hôn Anh - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 805).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Với Nhau Suốt Đời (Em Về Với Người - Sưu tầm) . Đơn ca (TTCH - Số 536).mp3", tags: ["Trữ Tình"] },
+    { file: "Vui Sống Thảnh Thơi (Mưa Qua Phố Vắng - Sưu tầm) . Đơn ca (TTCH - Số 272).mp3", tags: ["Trữ Tình"] },
+    { file: "WWW 1 (WWW 1 - Sưu tầm) . Đơn ca (TTCH - Số 000).mp3", tags: [] },
+    { file: "Xa Nguồn Tâm (Xa Người Mình Yêu - Sưu tầm) . Đơn ca (TTCH - Số 126).mp3", tags: ["Trữ Tình"] },
+    { file: "Xây Đắp Tình Yêu (Phi Điểu Và Ve Sầu - Nhạc ngoại) . Đơn Ca Nam (TTCH - Số 417).mp3", tags: ["Nhạc Trẻ", "Bình Yên"] },
+    { file: "Xuân Thái Bình (Ngày Vui Năm Ấy - Sưu tầm) . Đơn ca (TTCH - Số 791).mp3", tags: ["Tích Cực", "Nhạc Trẻ"] },
+    { file: "Xuân Thái Bình- (Magic Boulevard) (Ngày Vui Năm Ấy - Nhạc ngoại) . Đơn Ca Nữ (TTCH - Số 791).mp3", tags: ["Tích Cực", "Nhạc Trẻ"] },
+    { file: "Xuân Thanh Tịnh (Chiều Xuân Xa Nhà - Sưu tầm) . Đơn ca (TTCH - Số 321).mp3", tags: ["Trữ Tình"] },
+    { file: "Xuân Trong Chính Mình (Mùa Xuân Đầu Tiên - Sưu tầm) . Đơn ca (TTCH - Số 202).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Xuân Trong Mình Đây (Như Hoa Mùa Xuân - Sưu tầm) . Tam ca (TTCH - Số 480).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Xuân Trong Ta (Mùa Xuân Ơi! - Sưu tầm) . Song Ca (TTCH - Số 455).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Xuân Tu (Bên Bếp Lửa Hồng - Sưu tầm) . Đơn ca (TTCH - Số 730).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Yêu Hết Muôn Sinh (Say Một Đời Vì Em - Sưu tầm) . Đơn ca (TTCH - Số 687).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Yêu Kính Mẹ Cha (Duyên Quê - Sưu tầm) . Đơn ca (TTCH - Số 279).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Yêu Mãi Thiên Nhiên (Ga Chiều Phố Nhỏ - Sưu tầm) . Đơn ca (TTCH - Số 311).mp3", tags: ["Trữ Tình"] },
+    { file: "Yêu Mình (Đêm Nay Ai Đưa Em Về - Sưu tầm) . Đơn ca (TTCH - Số 579).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Yêu Như Mùa Xuân (Yêu Em Dài Lâu - Sưu tầm) . Đơn ca (TTCH - Số 720).mp3", tags: ["Nhạc Trẻ", "Trữ Tình"] },
+    { file: "Yêu Thân Tâm (Yêu Nhau Đi - Sưu tầm) . Đơn ca (TTCH - Số 516).mp3", tags: ["Nhạc Trẻ", "Tích Cực"] },
+    { file: "Yêu Thiên Nhiên (Lại Gần Hôn Anh - Sưu tầm) . Đơn ca (TTCH - Số 805).mp3", tags: ["Trữ Tình", "Bình Yên"] },
+    { file: "Yêu Thương Hết Muôn Sinh (Cho Quên Thú Đau Thương - Sưu tầm) . Đơn ca (TTCH - Số 800).mp3", tags: ["Trữ Tình"] },
+    { file: "Yêu Thương Nhau Hơn (Một Mai Qua Cơn Mê - Sưu tầm) . Đơn ca (TTCH - Số 697).mp3", tags: ["Bình Yên", "Tích Cực"] },
+    { file: "Yêu... (Xin Cho Tôi - Sưu tầm) . Đơn ca (TTCH - Số 206).mp3", tags: ["Trữ Tình", "Bình Yên"] }
   ];
 
   function parseSongMeta(file) {
-    const m = file.match(/^🎵\s*(.+?)\s*\((.+)\)\s*•\s*(.+?)\s*\(TTCH\s*-\s*Số\s*(\d+)\)\.mp3$/u);
+    const m = file.match(/^(?:🎵\s*)?(.+?)\s*\((.+)\)\s*[.•]\s*(.+?)\s*\(TTCH\s*-\s*Số\s*(\d+)\)\.mp3$/iu);
     if (!m) return { title: file.replace(/\.mp3$/i, "").replace(/^🎵\s*/, ""), artist: "TTCH", composer: "" };
     // the composer/origin note is the last " - " segment inside the first parenthesis, e.g. "... - Nhạc ngoại";
     // everything before that is the original song name this TTCH version is set to
@@ -373,6 +821,15 @@
   let currentQueuePos = 0;
   let isPlaying = false;
   let repeatMode = "none"; // none -> all -> one -> none
+  let playOrderMode = "off"; // off -> sequential -> shuffle -> off
+  let shuffleHistory = [];
+
+  // Sleep timer state
+  let sleepTimerMode = "none"; // none | time | songs
+  let sleepTimerDeadline = null; // timestamp (ms) for "time" mode
+  let sleepTimerSongsLeft = 0; // remaining songs for "songs" mode
+  let sleepTimerTickInterval = null;
+  let sleepTimerPendingKind = null; // "minutes" | "songs" — which custom prompt is open
   let activeBgLayer = "A";
 
   // ---- DOM refs ----
@@ -383,10 +840,6 @@
   const emptyState = document.getElementById("emptyState");
   const searchInput = document.getElementById("searchInput");
 
-  const playerCover = document.getElementById("playerCover");
-  const playerTitle = document.getElementById("playerTitle");
-  const playerArtist = document.getElementById("playerArtist");
-
   const playBtn = document.getElementById("playBtn");
   const playIcon = document.getElementById("playIcon");
   const pauseIcon = document.getElementById("pauseIcon");
@@ -394,7 +847,14 @@
   const nextBtn = document.getElementById("nextBtn");
   const repeatBtn = document.getElementById("repeatBtn");
   const repeatOneBadge = document.getElementById("repeatOneBadge");
+  const orderBtn = document.getElementById("orderBtn");
+  const orderIconSequential = document.getElementById("orderIconSequential");
+  const orderIconShuffle = document.getElementById("orderIconShuffle");
+  const toastContainer = document.getElementById("toastContainer");
   const volumeSlider = document.getElementById("volumeSlider");
+  const muteBtn = document.getElementById("muteBtn");
+  const volumeIconOn = document.getElementById("volumeIconOn");
+  const volumeIconOff = document.getElementById("volumeIconOff");
   const downloadBtn = document.getElementById("downloadBtn");
 
   const progressTrack = document.getElementById("progressTrack");
@@ -418,6 +878,20 @@
   const songInfoDuration = document.getElementById("songInfoDuration");
   const songInfoTags = document.getElementById("songInfoTags");
 
+  const sleepTimerBtn = document.getElementById("sleepTimerBtn");
+  const sleepTimerLabel = document.getElementById("sleepTimerLabel");
+  const sleepTimerOverlay = document.getElementById("sleepTimerOverlay");
+  const sleepTimerCloseBtn = document.getElementById("sleepTimerCloseBtn");
+  const sleepTimerStatus = document.getElementById("sleepTimerStatus");
+  const sleepTimerCancelBtn = document.getElementById("sleepTimerCancelBtn");
+  const sleepTimerCustomMinutesBtn = document.getElementById("sleepTimerCustomMinutesBtn");
+  const sleepTimerCustomSongsBtn = document.getElementById("sleepTimerCustomSongsBtn");
+  const sleepTimerCustomOverlay = document.getElementById("sleepTimerCustomOverlay");
+  const sleepTimerCustomLabel = document.getElementById("sleepTimerCustomLabel");
+  const sleepTimerCustomInput = document.getElementById("sleepTimerCustomInput");
+  const sleepTimerCustomCancel = document.getElementById("sleepTimerCustomCancel");
+  const sleepTimerCustomConfirm = document.getElementById("sleepTimerCustomConfirm");
+
   // ---- Helpers ----
   function formatTime(seconds) {
     if (!isFinite(seconds) || seconds === null || isNaN(seconds)) return "00:00";
@@ -439,6 +913,16 @@
     activeBgLayer = activeBgLayer === "A" ? "B" : "A";
   }
 
+  // Swaps the player's cover art by inserting a brand-new <img> (with a
+  // fade-in animation) instead of mutating the existing element's src/opacity
+  // in place — same safe pattern used for the playlist rows, avoids the
+  // Android paint-artifact issue we ran into earlier.
+  // Guards against rapid successive song switches: each call cancels any
+  // fade still pending from a previous call on the same element, so if the
+  // user taps through several songs faster than the 220ms fade-out, only the
+  // very last one ever actually inserts its content — no flashing through
+  // mismatched intermediate title/artist/cover combinations anymore.
+
   function ensureDurationLoaded(song) {
     if (song.duration || song.durationLoading) return;
     song.durationLoading = true;
@@ -458,12 +942,14 @@
     allTags.forEach((tag) => {
       const tab = document.createElement("button");
       const isActive = tag === currentTag;
+      const songCount = tag === ALL_TAG ? allSongs.length : allSongs.filter((song) => song.tags.includes(tag)).length;
+      tab.setAttribute("aria-label", `${tag}: ${songCount} bài hát`);
       tab.className = `flex-shrink-0 flex items-center gap-2 px-5 py-2.5 rounded-full text-base font-medium border transition ${
         isActive
           ? "bg-gray-900 dark:bg-white text-white dark:text-gray-900 border-gray-900 dark:border-white shadow-md"
           : "bg-white/50 dark:bg-white/10 text-gray-600 dark:text-gray-300 border-white/60 dark:border-white/10 hover:bg-white/70 dark:hover:bg-white/20"
       }`;
-      tab.innerHTML = `<span>${TAG_ICONS[tag] || "🏷️"}</span><span>${tag}</span>`;
+      tab.innerHTML = `<span>${TAG_ICONS[tag] || "🏷️"}</span><span>${tag}</span><span class="text-xs tabular-nums rounded-full bg-black/10 dark:bg-white/10 px-2 py-0.5">${songCount}</span>`;
       tab.addEventListener("click", () => {
         currentTag = tag;
         searchInput.value = "";
@@ -482,7 +968,7 @@
     if (isSearching) {
       // search across every tag, not just the active one
       filteredSongs = allSongs.filter((s) => s.title.toLowerCase().includes(q) || s.artist.toLowerCase().includes(q));
-      playlistHeading.textContent = `Kết quả tìm kiếm cho "${searchInput.value.trim()}"`;
+      playlistHeading.textContent = `Kết quả tìm kiếm cho "${searchInput.value.trim()}" (${filteredSongs.length} bài hát)`;
       playlistHeading.classList.remove("hidden");
     } else if (currentTag === ALL_TAG) {
       filteredSongs = allSongs.slice();
@@ -494,78 +980,124 @@
     renderPlaylist();
   }
 
+  let lastRenderedIds = null;
+
+  function buildRow(song, index, transitionClass) {
+    const isCurrent = song.id === currentSongId;
+    const row = document.createElement("div");
+    row.dataset.songId = song.id;
+    row.className = `song-row flex items-center gap-3 px-3 py-2.5 rounded-2xl cursor-pointer hover:bg-white/40 dark:hover:bg-white/10 ${isCurrent ? "active" : ""} ${transitionClass || ""}`;
+
+    row.innerHTML = `
+      <span class="song-number w-7 md:w-9 flex-shrink-0 text-right text-sm text-gray-500 dark:text-gray-400 tabular-nums" aria-label="Số thứ tự ${index + 1}">${index + 1}</span>
+      <div class="relative flex-shrink-0">
+        <img src="${song.cover}" alt="${song.title}" draggable="false" class="w-14 h-14 rounded-lg object-cover shadow-sm" />
+        <div class="row-playing-overlay absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center ${isCurrent && isPlaying ? "opacity-100" : "opacity-0 pointer-events-none"}">
+          <div class="flex items-end gap-0.5 h-3.5">
+            <span class="w-0.5 bg-white animate-pulse" style="height:60%"></span>
+            <span class="w-0.5 bg-white animate-pulse" style="height:100%; animation-delay:150ms"></span>
+            <span class="w-0.5 bg-white animate-pulse" style="height:40%; animation-delay:300ms"></span>
+          </div>
+        </div>
+      </div>
+      <div class="min-w-0 flex-1">
+        <p class="font-medium text-gray-900 dark:text-gray-100 line-clamp-2 text-base md:text-lg" title="${song.title}">${song.title}</p>
+        <p class="text-sm md:text-base text-gray-500 dark:text-gray-400 truncate">${song.artist}</p>
+        ${song.composer ? `<p class="md:hidden text-xs text-gray-500 dark:text-gray-400 truncate">Tác giả: ${song.composer}</p>` : ""}
+        <div class="flex flex-wrap gap-1 mt-1">
+          ${song.tags.map((t) => `<span class="text-[10px] font-medium text-gray-500 dark:text-gray-400 bg-black/5 dark:bg-white/10 px-2 py-0.5 rounded-full">${t}</span>`).join("")}
+        </div>
+      </div>
+      ${song.composer ? `<div class="hidden md:block w-28 lg:w-36 flex-shrink-0">
+        <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Tác giả</p>
+        <p class="text-sm text-gray-500 dark:text-gray-400 truncate">${song.composer}</p>
+      </div>` : ""}
+      <span class="text-sm font-medium text-gray-500 dark:text-gray-400 tabular-nums flex-shrink-0" data-duration-for="${song.id}">
+        ${song.duration ? formatTime(song.duration) : "--:--"}
+      </span>
+      <button title="Tải về" class="row-download-btn flex-shrink-0 p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-black/5 dark:hover:bg-white/10 transition">
+        <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
+        </svg>
+      </button>
+    `;
+
+    let longPressTimer = null;
+    let longPressTriggered = false;
+
+    row.addEventListener("pointerdown", () => {
+      longPressTriggered = false;
+      longPressTimer = setTimeout(() => {
+        longPressTriggered = true;
+        showSongInfo(song);
+      }, 550);
+    });
+    const cancelLongPress = () => clearTimeout(longPressTimer);
+    row.addEventListener("pointerup", cancelLongPress);
+    row.addEventListener("pointerleave", cancelLongPress);
+    row.addEventListener("pointercancel", cancelLongPress);
+    row.addEventListener("contextmenu", (e) => e.preventDefault());
+
+    row.addEventListener("click", () => {
+      if (longPressTriggered) { longPressTriggered = false; return; }
+      loadSong(song, true, filteredSongs);
+    });
+
+    row.querySelector(".row-download-btn").addEventListener("click", (e) => {
+      e.stopPropagation();
+      downloadSong(song);
+    });
+
+    return row;
+  }
+
   function renderPlaylist() {
+    const idsKey = filteredSongs.map((s) => s.id).join(",");
+
+    // If the same set/order of songs is already on screen, don't rebuild the
+    // whole list (that caused the whole playlist to flash on every tap).
+    // Just swap out the specific row(s) whose state actually changed.
+    if (idsKey === lastRenderedIds) {
+      updateRowStates();
+      return;
+    }
+    lastRenderedIds = idsKey;
+
     playlistEl.innerHTML = "";
     emptyState.classList.toggle("hidden", filteredSongs.length > 0);
 
-    filteredSongs.forEach((song) => {
-      const isCurrent = song.id === currentSongId;
-      const row = document.createElement("div");
-      row.className = `song-row fade-in flex items-center gap-3 px-3 py-2.5 rounded-2xl cursor-pointer transition hover:bg-white/40 dark:hover:bg-white/10 ${isCurrent ? "active" : ""}`;
-
-      row.innerHTML = `
-        <div class="relative flex-shrink-0">
-          <img src="${song.cover}" alt="${song.title}" class="w-14 h-14 rounded-lg object-cover shadow-sm" />
-          ${isCurrent && isPlaying ? `
-            <div class="absolute inset-0 bg-black/30 rounded-lg flex items-center justify-center">
-              <div class="flex items-end gap-0.5 h-3.5">
-                <span class="w-0.5 bg-white animate-pulse" style="height:60%"></span>
-                <span class="w-0.5 bg-white animate-pulse" style="height:100%; animation-delay:150ms"></span>
-                <span class="w-0.5 bg-white animate-pulse" style="height:40%; animation-delay:300ms"></span>
-              </div>
-            </div>` : ""}
-        </div>
-        <div class="min-w-0 flex-1">
-          <p class="font-medium text-gray-900 dark:text-gray-100 line-clamp-2 text-base md:text-lg" title="${song.title}">${song.title}</p>
-          <p class="text-sm md:text-base text-gray-500 dark:text-gray-400 truncate">${song.artist}</p>
-          ${song.composer ? `<p class="md:hidden text-xs text-gray-500 dark:text-gray-400 truncate">Tác giả: ${song.composer}</p>` : ""}
-          <div class="flex flex-wrap gap-1 mt-1">
-            ${song.tags.map((t) => `<span class="text-[10px] font-medium text-gray-500 dark:text-gray-400 bg-black/5 dark:bg-white/10 px-2 py-0.5 rounded-full">${t}</span>`).join("")}
-          </div>
-        </div>
-        ${song.composer ? `<div class="hidden md:block w-28 lg:w-36 flex-shrink-0">
-          <p class="text-[11px] uppercase tracking-wide text-gray-500 dark:text-gray-400">Tác giả</p>
-          <p class="text-sm text-gray-500 dark:text-gray-400 truncate">${song.composer}</p>
-        </div>` : ""}
-        <span class="text-sm font-medium text-gray-500 dark:text-gray-400 tabular-nums flex-shrink-0" data-duration-for="${song.id}">
-          ${song.duration ? formatTime(song.duration) : "--:--"}
-        </span>
-        <button title="Tải về" class="row-download-btn flex-shrink-0 p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-black/5 dark:hover:bg-white/10 transition">
-          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M12 3v12m0 0l-4-4m4 4l4-4M4 17v2a2 2 0 002 2h12a2 2 0 002-2v-2" />
-          </svg>
-        </button>
-      `;
-
-      let longPressTimer = null;
-      let longPressTriggered = false;
-
-      row.addEventListener("pointerdown", () => {
-        longPressTriggered = false;
-        longPressTimer = setTimeout(() => {
-          longPressTriggered = true;
-          showSongInfo(song);
-        }, 550);
-      });
-      const cancelLongPress = () => clearTimeout(longPressTimer);
-      row.addEventListener("pointerup", cancelLongPress);
-      row.addEventListener("pointerleave", cancelLongPress);
-      row.addEventListener("pointercancel", cancelLongPress);
-      row.addEventListener("contextmenu", (e) => e.preventDefault());
-
-      row.addEventListener("click", () => {
-        if (longPressTriggered) { longPressTriggered = false; return; }
-        loadSong(song, true, filteredSongs);
-      });
-
-      row.querySelector(".row-download-btn").addEventListener("click", (e) => {
-        e.stopPropagation();
-        downloadSong(song);
-      });
-
-      playlistEl.appendChild(row);
-
+    filteredSongs.forEach((song, index) => {
+      playlistEl.appendChild(buildRow(song, index));
       ensureDurationLoaded(song);
+    });
+  }
+
+  // Only the row(s) whose active/playing state actually changed get replaced
+  // with a freshly built element (not just class-toggled in place). On
+  // Android, mutating classes/opacity on an already-painted rounded element
+  // can leave a torn-corner paint artifact; swapping in a brand-new element
+  // avoids that, while leaving every other (untouched) row's DOM completely
+  // alone avoids any full-list flash.
+  function updateRowStates() {
+    playlistEl.querySelectorAll(".song-row").forEach((row) => {
+      const id = Number(row.dataset.songId);
+      const isCurrent = id === currentSongId;
+      const overlay = row.querySelector(".row-playing-overlay");
+      const showOverlay = isCurrent && isPlaying;
+      const overlayIsShown = overlay && overlay.classList.contains("opacity-100");
+      const rowIsActive = row.classList.contains("active");
+
+      if (rowIsActive === isCurrent && overlayIsShown === showOverlay) return;
+
+      const index = filteredSongs.findIndex((s) => s.id === id);
+      const song = filteredSongs[index];
+      if (!song) return;
+
+      let transitionClass = "";
+      if (!rowIsActive && isCurrent) transitionClass = "row-fade-to-active";
+      else if (rowIsActive && !isCurrent) transitionClass = "row-fade-from-active";
+
+      row.replaceWith(buildRow(song, index, transitionClass));
     });
   }
 
@@ -597,25 +1129,305 @@
     if (e.target === songInfoOverlay) hideSongInfo();
   });
 
+  // ---- Sleep timer ----
+  function openSleepTimerMenu() {
+    sleepTimerStatus.textContent = sleepTimerStatusText();
+    sleepTimerCancelBtn.classList.toggle("hidden", sleepTimerMode === "none");
+    sleepTimerOverlay.classList.remove("hidden");
+  }
+
+  function closeSleepTimerMenu() {
+    sleepTimerOverlay.classList.add("hidden");
+  }
+
+  function sleepTimerStatusText() {
+    if (sleepTimerMode === "time" && sleepTimerDeadline) {
+      const remainMs = Math.max(0, sleepTimerDeadline - Date.now());
+      return `Sẽ tắt nhạc sau ${formatTime(Math.ceil(remainMs / 1000))}`;
+    }
+    if (sleepTimerMode === "songs") {
+      return `Sẽ tắt nhạc sau ${sleepTimerSongsLeft} bài nữa`;
+    }
+    return "Chưa bật hẹn giờ";
+  }
+
+  function refreshSleepTimerLabel() {
+    if (sleepTimerMode === "time" && sleepTimerDeadline) {
+      const remainMs = Math.max(0, sleepTimerDeadline - Date.now());
+      sleepTimerLabel.textContent = formatTime(Math.ceil(remainMs / 1000));
+      sleepTimerLabel.classList.remove("hidden");
+    } else if (sleepTimerMode === "songs") {
+      sleepTimerLabel.textContent = `${sleepTimerSongsLeft} bài`;
+      sleepTimerLabel.classList.remove("hidden");
+    } else {
+      sleepTimerLabel.classList.add("hidden");
+    }
+    sleepTimerBtn.classList.toggle("!text-gray-900", sleepTimerMode !== "none");
+    sleepTimerBtn.classList.toggle("dark:!text-gray-100", sleepTimerMode !== "none");
+    if (!sleepTimerOverlay.classList.contains("hidden")) {
+      sleepTimerStatus.textContent = sleepTimerStatusText();
+      sleepTimerCancelBtn.classList.toggle("hidden", sleepTimerMode === "none");
+    }
+  }
+
+  function stopSleepTimerTick() {
+    clearInterval(sleepTimerTickInterval);
+    sleepTimerTickInterval = null;
+  }
+
+  function triggerSleepTimer() {
+    audio.pause();
+    isPlaying = false;
+    updatePlayIcon();
+    renderPlaylist();
+    clearSleepTimer();
+    showToast("Đã tắt nhạc theo hẹn giờ");
+  }
+
+  function clearSleepTimer() {
+    sleepTimerMode = "none";
+    sleepTimerDeadline = null;
+    sleepTimerSongsLeft = 0;
+    stopSleepTimerTick();
+    refreshSleepTimerLabel();
+  }
+
+  function setSleepTimerMinutes(minutes) {
+    if (!minutes || minutes <= 0) return;
+    sleepTimerMode = "time";
+    sleepTimerDeadline = Date.now() + minutes * 60 * 1000;
+    sleepTimerSongsLeft = 0;
+    stopSleepTimerTick();
+    sleepTimerTickInterval = setInterval(() => {
+      if (Date.now() >= sleepTimerDeadline) { triggerSleepTimer(); return; }
+      refreshSleepTimerLabel();
+    }, 1000);
+    refreshSleepTimerLabel();
+    showToast(`Đã hẹn giờ tắt nhạc sau ${minutes} phút`);
+    closeSleepTimerMenu();
+  }
+
+  function setSleepTimerSongs(count) {
+    if (!count || count <= 0) return;
+    sleepTimerMode = "songs";
+    sleepTimerSongsLeft = count;
+    sleepTimerDeadline = null;
+    stopSleepTimerTick();
+    refreshSleepTimerLabel();
+    showToast(`Đã hẹn giờ tắt nhạc sau ${count} bài`);
+    closeSleepTimerMenu();
+  }
+
+  // Called once per completed song (from the "ended" handler). Returns true
+  // if playback should stop right here (timer just fired).
+  function noteSongFinishedForSleepTimer() {
+    if (sleepTimerMode !== "songs") return false;
+    sleepTimerSongsLeft -= 1;
+    if (sleepTimerSongsLeft <= 0) {
+      triggerSleepTimer();
+      return true;
+    }
+    refreshSleepTimerLabel();
+    return false;
+  }
+
+  function openCustomSleepPrompt(kind) {
+    sleepTimerPendingKind = kind;
+    sleepTimerCustomLabel.textContent = kind === "minutes" ? "Nhập số phút" : "Nhập số bài hát";
+    sleepTimerCustomInput.value = "";
+    sleepTimerCustomOverlay.classList.remove("hidden");
+    setTimeout(() => sleepTimerCustomInput.focus(), 50);
+  }
+
+  function closeCustomSleepPrompt() {
+    sleepTimerCustomOverlay.classList.add("hidden");
+    sleepTimerPendingKind = null;
+  }
+
+  sleepTimerBtn.addEventListener("click", openSleepTimerMenu);
+  sleepTimerCloseBtn.addEventListener("click", closeSleepTimerMenu);
+  sleepTimerOverlay.addEventListener("click", (e) => {
+    if (e.target === sleepTimerOverlay) closeSleepTimerMenu();
+  });
+
+  document.querySelectorAll(".sleep-timer-option[data-timer-minutes]").forEach((btn) => {
+    btn.addEventListener("click", () => setSleepTimerMinutes(Number(btn.dataset.timerMinutes)));
+  });
+  document.querySelectorAll(".sleep-timer-option[data-timer-songs]").forEach((btn) => {
+    btn.addEventListener("click", () => setSleepTimerSongs(Number(btn.dataset.timerSongs)));
+  });
+
+  sleepTimerCustomMinutesBtn.addEventListener("click", () => openCustomSleepPrompt("minutes"));
+  sleepTimerCustomSongsBtn.addEventListener("click", () => openCustomSleepPrompt("songs"));
+  sleepTimerCancelBtn.addEventListener("click", () => { clearSleepTimer(); showToast("Đã tắt hẹn giờ"); closeSleepTimerMenu(); });
+
+  sleepTimerCustomCancel.addEventListener("click", closeCustomSleepPrompt);
+  sleepTimerCustomOverlay.addEventListener("click", (e) => {
+    if (e.target === sleepTimerCustomOverlay) closeCustomSleepPrompt();
+  });
+  sleepTimerCustomConfirm.addEventListener("click", () => {
+    const value = Number(sleepTimerCustomInput.value);
+    if (!value || value <= 0) return;
+    if (sleepTimerPendingKind === "minutes") setSleepTimerMinutes(value);
+    else if (sleepTimerPendingKind === "songs") setSleepTimerSongs(value);
+    closeCustomSleepPrompt();
+  });
+  sleepTimerCustomInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") sleepTimerCustomConfirm.click();
+  });
+
   // ---- Player logic ----
+  let playRequestId = 0;
+  // Start as soon as the browser has enough data to play. Waiting for a large
+  // buffer here makes the button feel unresponsive on slower connections.
+  // The waiting/stalled handlers below recover automatically if the network
+  // cannot keep up during playback.
+  const INITIAL_BUFFER_SECONDS = 0;
+
+  function getBufferedSeconds() {
+    if (!audio.buffered.length) return 0;
+    for (let i = 0; i < audio.buffered.length; i++) {
+      if (audio.currentTime >= audio.buffered.start(i) && audio.currentTime <= audio.buffered.end(i)) {
+        return Math.max(0, audio.buffered.end(i) - audio.currentTime);
+      }
+    }
+    return 0;
+  }
+
+  function playCurrentAudio() {
+    const requestId = ++playRequestId;
+
+    return new Promise((resolve, reject) => {
+      const rejectOnError = () => {
+        cleanup();
+        reject(new Error("Không thể tải file nhạc"));
+      };
+      let bufferTimeout;
+      const tryPlay = (ignoreBuffer = false) => {
+        if (requestId !== playRequestId) {
+          cleanup();
+          reject(new Error("Yêu cầu phát đã bị thay thế"));
+          return;
+        }
+        const hasEnoughBuffer = getBufferedSeconds() >= INITIAL_BUFFER_SECONDS ||
+          (audio.duration && audio.duration - audio.currentTime <= INITIAL_BUFFER_SECONDS);
+        if (!hasEnoughBuffer && !ignoreBuffer) return;
+
+        audio.play().then(() => {
+          cleanup();
+          resolve();
+        }).catch((error) => {
+          cleanup();
+          reject(error);
+        });
+      };
+      const cleanup = () => {
+        clearTimeout(bufferTimeout);
+        audio.removeEventListener("canplay", tryPlay);
+        audio.removeEventListener("progress", tryPlay);
+        audio.removeEventListener("loadeddata", tryPlay);
+        audio.removeEventListener("error", rejectOnError);
+      };
+
+      audio.addEventListener("canplay", tryPlay);
+      audio.addEventListener("progress", tryPlay);
+      audio.addEventListener("loadeddata", tryPlay);
+      audio.addEventListener("error", rejectOnError, { once: true });
+      bufferTimeout = setTimeout(() => tryPlay(true), 15000);
+
+      if (audio.readyState >= HTMLMediaElement.HAVE_FUTURE_DATA) {
+        tryPlay();
+      } else {
+        audio.load();
+      }
+    });
+  }
+
   function loadSong(song, autoplay, queue) {
     currentSongId = song.id;
     currentQueue = queue && queue.length ? queue : filteredSongs;
     currentQueuePos = currentQueue.findIndex((s) => s.id === song.id);
     if (currentQueuePos === -1) currentQueuePos = 0;
 
-    audio.src = song.src;
-    playerCover.src = song.cover;
-    playerTitle.textContent = song.title;
-    playerArtist.textContent = song.artist;
+    const targetVolume = parseFloat(volumeSlider.value);
+    const wasPlaying = !audio.paused && !audio.ended;
 
-    crossfadeBackground(song.gradient);
-    renderPlaylist();
-    updateMediaSessionMetadata(song);
+    const startNewSong = () => {
+      audio.src = song.src;
+      audio.volume = 0;
 
-    if (autoplay) {
-      audio.play().then(() => { isPlaying = true; updatePlayIcon(); renderPlaylist(); }).catch(() => {});
+      crossfadeBackground(song.gradient);
+      renderPlaylist();
+      updateMediaSessionMetadata(song);
+
+      if (autoplay) {
+        playCurrentAudio().then(() => {
+          isPlaying = true;
+          updatePlayIcon();
+          renderPlaylist();
+          fadeVolume(audio, targetVolume, 700);
+        }).catch(() => {
+          isPlaying = false;
+          updatePlayIcon();
+          renderPlaylist();
+          showToast("Chưa tải được bài hát, hãy thử lại");
+        });
+      } else {
+        audio.volume = targetVolume;
+        audio.load();
+      }
+    };
+
+    // Fade the current song's volume out first (if something is playing),
+    // then switch tracks and fade the new one in — avoids an abrupt cut.
+    if (wasPlaying) {
+      fadeVolume(audio, 0, 450, startNewSong);
+    } else {
+      startNewSong();
     }
+  }
+
+  // Smoothly ramps an <audio> element's volume to `target` over `duration`ms.
+  // Skips straight to the target when the page is backgrounded (screen off /
+  // switched app): background tabs get their JS timers throttled hard by the
+  // browser, so a step-based fade can get stuck barely above 0 for a long
+  // time — sounding like "no audio" even though the track is actually
+  // playing behind the scenes.
+  let volumeFadeTimer = null;
+  function fadeVolume(audioEl, target, duration, onDone) {
+    clearInterval(volumeFadeTimer);
+    if (document.hidden) {
+      audioEl.volume = target;
+      if (onDone) onDone();
+      return;
+    }
+    const start = audioEl.volume;
+    const diff = target - start;
+    if (Math.abs(diff) < 0.01 || duration <= 0) {
+      audioEl.volume = target;
+      if (onDone) onDone();
+      return;
+    }
+    const stepMs = 30;
+    const steps = Math.max(1, Math.round(duration / stepMs));
+    let i = 0;
+    volumeFadeTimer = setInterval(() => {
+      // If the page gets backgrounded mid-fade, jump straight to the target
+      // instead of continuing a fade that background throttling would stall.
+      if (document.hidden) {
+        clearInterval(volumeFadeTimer);
+        audioEl.volume = target;
+        if (onDone) onDone();
+        return;
+      }
+      i++;
+      audioEl.volume = Math.min(1, Math.max(0, start + (diff * i) / steps));
+      if (i >= steps) {
+        clearInterval(volumeFadeTimer);
+        audioEl.volume = target;
+        if (onDone) onDone();
+      }
+    }, stepMs);
   }
 
   // ---- Media Session (lock screen / notification controls, background playback) ----
@@ -653,17 +1465,35 @@
     if (isPlaying) {
       audio.pause();
       isPlaying = false;
+      updatePlayIcon();
+      renderPlaylist();
     } else {
-      audio.play().catch(() => {});
-      isPlaying = true;
+      playCurrentAudio().then(() => {
+        isPlaying = true;
+        updatePlayIcon();
+        renderPlaylist();
+        if ("mediaSession" in navigator) navigator.mediaSession.playbackState = "playing";
+      }).catch(() => {
+        isPlaying = false;
+        updatePlayIcon();
+        renderPlaylist();
+        showToast("Chưa tải được bài hát, hãy thử lại");
+      });
     }
-    updatePlayIcon();
-    renderPlaylist();
-    if ("mediaSession" in navigator) navigator.mediaSession.playbackState = isPlaying ? "playing" : "paused";
+    if ("mediaSession" in navigator && !isPlaying) navigator.mediaSession.playbackState = "paused";
   }
 
   function nextSong() {
     if (!currentQueue.length) return;
+
+    if (playOrderMode === "shuffle" && currentQueue.length > 1) {
+      shuffleHistory.push(currentQueue[currentQueuePos].id);
+      let randomPos;
+      do { randomPos = Math.floor(Math.random() * currentQueue.length); } while (randomPos === currentQueuePos);
+      loadSong(currentQueue[randomPos], isPlaying, currentQueue);
+      return;
+    }
+
     const nextPos = (currentQueuePos + 1) % currentQueue.length;
     loadSong(currentQueue[nextPos], isPlaying, currentQueue);
   }
@@ -674,15 +1504,53 @@
       return;
     }
     if (!currentQueue.length) return;
+
+    if (playOrderMode === "shuffle" && shuffleHistory.length) {
+      const prevId = shuffleHistory.pop();
+      const song = currentQueue.find((s) => s.id === prevId) || allSongs.find((s) => s.id === prevId);
+      if (song) { loadSong(song, isPlaying, currentQueue); return; }
+    }
+
     const prevPos = (currentQueuePos - 1 + currentQueue.length) % currentQueue.length;
     loadSong(currentQueue[prevPos], isPlaying, currentQueue);
   }
 
+  function showToast(message) {
+    const toast = document.createElement("div");
+    toast.className = "toast-msg bg-gray-900/90 dark:bg-gray-100/90 text-white dark:text-gray-900 text-sm font-medium px-4 py-2 rounded-full shadow-lg whitespace-nowrap";
+    toast.textContent = message;
+    toastContainer.appendChild(toast);
+    setTimeout(() => {
+      toast.classList.add("toast-out");
+      setTimeout(() => toast.remove(), 260);
+    }, 1800);
+  }
+
   function cycleRepeat() {
     repeatMode = repeatMode === "none" ? "all" : repeatMode === "all" ? "one" : "none";
-    repeatBtn.classList.toggle("text-pink-500", repeatMode !== "none");
+    repeatBtn.classList.toggle("!text-gray-900", repeatMode !== "none");
+    repeatBtn.classList.toggle("dark:!text-gray-100", repeatMode !== "none");
     repeatOneBadge.classList.toggle("hidden", repeatMode !== "one");
     repeatOneBadge.classList.toggle("flex", repeatMode === "one");
+
+    if (repeatMode === "all") showToast("Đã bật chế độ Lặp lại danh sách");
+    else if (repeatMode === "one") showToast("Đã bật chế độ Lặp lại một bài");
+    else showToast("Đã tắt chế độ Lặp lại");
+  }
+
+  function cyclePlayOrder() {
+    playOrderMode = playOrderMode === "off" ? "sequential" : playOrderMode === "sequential" ? "shuffle" : "off";
+    if (playOrderMode !== "shuffle") shuffleHistory = [];
+
+    const isOn = playOrderMode !== "off";
+    orderBtn.classList.toggle("!text-gray-900", isOn);
+    orderBtn.classList.toggle("dark:!text-gray-100", isOn);
+    orderIconShuffle.classList.toggle("hidden", playOrderMode !== "shuffle");
+    orderIconSequential.classList.toggle("hidden", playOrderMode === "shuffle");
+
+    if (playOrderMode === "sequential") showToast("Đã bật chế độ Phát theo thứ tự");
+    else if (playOrderMode === "shuffle") showToast("Đã bật chế độ Phát ngẫu nhiên");
+    else showToast("Đã tắt chế độ Phát ngẫu nhiên");
   }
 
   async function downloadSong(song) {
@@ -741,7 +1609,31 @@
     durationTimeEl.textContent = formatTime(audio.duration);
   });
 
+  // A remote file can temporarily outrun its network buffer after playback
+  // starts. Keep the player in the playing state and resume automatically when
+  // more data arrives instead of requiring the user to press Play again.
+  audio.addEventListener("waiting", () => {
+    if (isPlaying) audio.play().catch(() => {});
+  });
+  audio.addEventListener("stalled", () => {
+    if (isPlaying) audio.play().catch(() => {});
+  });
+
+  // Safety net: if we come back from the background and the volume somehow
+  // got left lower than it should be (e.g. a fade was interrupted by
+  // throttling at an awkward moment), snap it back to the correct level.
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && isPlaying) {
+      const targetVolume = parseFloat(volumeSlider.value);
+      if (Math.abs(audio.volume - targetVolume) > 0.02) {
+        audio.volume = targetVolume;
+      }
+    }
+  });
+
   audio.addEventListener("ended", () => {
+    if (noteSongFinishedForSleepTimer()) return;
+
     if (repeatMode === "one") {
       audio.currentTime = 0;
       audio.play();
@@ -805,10 +1697,33 @@
   window.addEventListener("touchend", (e) => endProgressDrag(e.changedTouches[0].clientX));
 
   // ---- Volume ----
+  let volumeBeforeMute = parseFloat(volumeSlider.value);
+
+  function updateVolumeIcon() {
+    const muted = audio.volume === 0;
+    volumeIconOn.classList.toggle("hidden", muted);
+    volumeIconOff.classList.toggle("hidden", !muted);
+  }
+
   volumeSlider.addEventListener("input", (e) => {
     audio.volume = parseFloat(e.target.value);
+    if (audio.volume > 0) volumeBeforeMute = audio.volume;
+    updateVolumeIcon();
   });
   audio.volume = parseFloat(volumeSlider.value);
+  updateVolumeIcon();
+
+  muteBtn.addEventListener("click", () => {
+    if (audio.volume > 0) {
+      volumeBeforeMute = audio.volume;
+      audio.volume = 0;
+      volumeSlider.value = 0;
+    } else {
+      audio.volume = volumeBeforeMute || 0.8;
+      volumeSlider.value = audio.volume;
+    }
+    updateVolumeIcon();
+  });
 
   // ---- Search filter ----
   searchInput.addEventListener("input", applyFilter);
@@ -818,6 +1733,7 @@
   nextBtn.addEventListener("click", () => nextSong());
   prevBtn.addEventListener("click", () => prevSong());
   repeatBtn.addEventListener("click", cycleRepeat);
+  orderBtn.addEventListener("click", cyclePlayOrder);
   downloadBtn.addEventListener("click", downloadCurrentSong);
 
   // ---- Theme (light/dark) ----
@@ -845,16 +1761,7 @@
   applyFilter();
 
   const firstSong = allSongs[0];
-  currentSongId = firstSong.id;
-  currentQueue = filteredSongs;
-  currentQueuePos = 0;
-  bgLayerA.style.background = gradientCss(firstSong.gradient);
-  playerCover.src = firstSong.cover;
-  playerTitle.textContent = firstSong.title;
-  playerArtist.textContent = firstSong.artist;
-  audio.src = firstSong.src;
-  updateMediaSessionMetadata(firstSong);
-  renderPlaylist();
+  loadSong(firstSong, false, filteredSongs);
 </script>
 
 </body>
