@@ -821,7 +821,7 @@
   let currentQueuePos = 0;
   let isPlaying = false;
   let repeatMode = "none"; // none -> all -> one -> none
-  let playOrderMode = "off"; // off -> sequential -> shuffle -> off
+  let playOrderMode = "sequential"; // sequential -> shuffle -> off -> sequential
   let shuffleHistory = [];
 
   // Sleep timer state
@@ -1735,6 +1735,11 @@
   repeatBtn.addEventListener("click", cycleRepeat);
   orderBtn.addEventListener("click", cyclePlayOrder);
   downloadBtn.addEventListener("click", downloadCurrentSong);
+
+  // Start with sequential playback enabled by default.
+  orderBtn.classList.add("!text-gray-900", "dark:!text-gray-100");
+  orderIconShuffle.classList.add("hidden");
+  orderIconSequential.classList.remove("hidden");
 
   // ---- Theme (light/dark) ----
   function applyTheme(isDark) {
